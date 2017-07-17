@@ -30,4 +30,13 @@ public class BBSparkTemplate extends BaseBBTemplate {
             RESPONSE.set(null);
         });
     }
+
+    @Override
+    public String toS(Object o) {
+
+        String s = super.toS(o);
+        return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot").replaceAll("'", "&#39");
+
+    }
 }
