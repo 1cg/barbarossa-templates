@@ -403,7 +403,7 @@ public class BBTemplateGen {
                 sb.append("        try {\n");
             }
 
-            if (currClass.hasLayout) {
+            if (currClass.hasLayout && !currClass.isLayout) {
                 sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().header(buffer);\n");
             }
 
@@ -414,7 +414,7 @@ public class BBTemplateGen {
                 makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
             }
 
-            if (currClass.hasLayout) {
+            if (currClass.hasLayout && !currClass.isLayout) {
                 sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().footer(buffer);\n");
             }
 
@@ -506,6 +506,9 @@ public class BBTemplateGen {
                     .append("    }\n\n");
             sb.append("    @Override\n")
                     .append("    public void header(Appendable buffer) throws IOException {\n");
+            if (currClass.hasLayout) {
+                sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().header(buffer);\n");
+            }
             assert(currClass.depth == 0);
             makeFuncContent(currClass.startTokenPos, currClass.contentPos);
             sb.append("    }\n");
@@ -513,6 +516,9 @@ public class BBTemplateGen {
             sb.append("    @Override\n")
                     .append("    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(currClass.contentPos, currClass.endTokenPos);
+            if (currClass.hasLayout) {
+                sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().footer(buffer);\n");
+            }
             sb.append("    }\n");
         }
 

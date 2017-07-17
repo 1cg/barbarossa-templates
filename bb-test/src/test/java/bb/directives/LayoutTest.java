@@ -20,4 +20,9 @@ public class LayoutTest {
         assertEquals("HeaderContentFooter", HasLayoutAndContent1.render());
         assertEquals("HeaderContentFooter", HasLayoutAndContent2.render());
     }
+
+    @Test
+    public void NestedLayoutTestWithContent() {
+        assertEquals("HeaderH2ContentF2Footer", HasNestedLayout.render());
+    }
 }
