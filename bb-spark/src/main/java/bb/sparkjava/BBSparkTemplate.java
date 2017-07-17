@@ -1,6 +1,6 @@
 package bb.sparkjava;
 
-import bb.runtime.BaseBqBTemplate;
+import bb.runtime.BaseBBTemplate;
 import spark.Request;
 import spark.Response;
 
