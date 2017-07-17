@@ -11,8 +11,6 @@ public class BBSparkTemplate extends BaseBBTemplate {
     private static ThreadLocal<Request> REQUEST = new ThreadLocal<Request>();
     private static ThreadLocal<Response> RESPONSE = new ThreadLocal<Response>();
 
-    private boolean isRaw = false;
-
     public Response getResponse() {
         return RESPONSE.get();
     }
@@ -34,16 +32,37 @@ public class BBSparkTemplate extends BaseBBTemplate {
 
     @Override
     public String toS(Object o) {
-        if (isRaw) {
-            isRaw = false;
-            return super.toS(o);
+        if (o instanceof RawObject) {
+            return super.toS(o.toString());
+        } else if (o == null) {
+            return "";
+        } else {
+            return escapeHTML(o.toString());
         }
-        return super.toS(o).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-                .replaceAll("\"", "&quot").replaceAll("'", "&#39");
+    }
+
+    private String escapeHTML(String str) {
+        return str.replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot")
+                .replaceAll("'", "&#39");
     }
 
     public Object raw(Object o) {
-        isRaw = true;
-        return o;
+        return new RawObject(o);
     }
+
+    private static class RawObject {
+        private final Object in;
+
+        RawObject(Object in) {
+            this.in = in;
+        }
+
+        public String toString() {
+            return in.toString();
+        }
+    }
+
 }
