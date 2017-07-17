@@ -574,7 +574,7 @@ public class BBTemplateGen {
                         } else if (dir.dirType == INCLUDE) {
                             addInclude(dir);
                         } else if (dir.dirType == CONTENT) {
-                            assert(i == endPos);
+                            break;
                         }
                         break;
                 }

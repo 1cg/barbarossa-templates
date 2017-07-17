@@ -22,7 +22,7 @@ template is targeting (e.g. `index.bb.html`).
   * [`include`](#include)
   * [`params`](#params)
   * [`section`](#section)
-  * [`layout`](#layout)
+  * [`layouts`](#layout)
 - [Layouts](#layouts)
 
 # Basic Syntax #
@@ -385,22 +385,22 @@ Which will result in the following HTML:
 ```
 
 
-## `layout` ##
+## `layouts` ##
 
 See below.
 
 # Layouts #
 
-Layouts can be made and used with the `content` and `layout` directives respectively.
+Layouts can be made and used with the `content` and `layouts` directives respectively.
 
 The `content` keyword will split the current template into the header and footer
 of a layout.
 
-The `layout` keyword will make the header and footer of the layout frame the
+The `layouts` keyword will make the header and footer of the layout frame the
 current template. The code from the current template will appear where the
 `content` keyword was originally.
 
-Both the `content` directive and `layout` directive are only valid in the outermost class
+Both the `content` directive and `layouts` directive are only valid in the outermost class
 (not within sections) and can only appear once in a template.
 
 The `params` directive is not yet supported for a template that contains the `content` keyword.
