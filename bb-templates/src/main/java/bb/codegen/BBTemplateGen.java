@@ -1,5 +1,6 @@
 package bb.codegen;
 
+import bb.runtime.ILayout;
 import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
 
@@ -371,8 +372,10 @@ public class BBTemplateGen {
         }
 
         private void buildFile(String packageName, List<Directive> dirList) {
-            sb.append("package ").reAppend(packageName + ";\n\n");
-            sb.append("import java.io.IOException;\n\n");
+            sb.append("package ").reAppend(packageName + ";\n\n")
+                    .append("import java.io.IOException;\n")
+                    .append("import bb.BBTemplates;\n")
+                    .append("import bb.runtime.ILayout;\n\n");
             addImports(dirList);
             makeClassContent();
         }
@@ -388,13 +391,24 @@ public class BBTemplateGen {
             return false;
         }
 
+        private void addGetLayout() {
+            if (currClass.depth == 0) {
+                sb.append("        private bb.runtime.ILayout getTemplateLayout() {\n")
+                        .append("        if (this.myLayout != null) {\n")
+                        .append("            return this.myLayout;\n")
+                        .append("        } else {\n")
+                        .append("            return BBTemplates.getDefaultTemplate(\"").reAppend(currClass.name).reAppend("\");\n")
+                        .append("        }\n")
+                        .append("    }");
+            }
+        }
         private void addRenderImpl() {
             if (currClass.paramsList == null) {
                 sb.append("    public void renderImpl(Appendable buffer) {\n");
             } else {
                 sb.append("    public void renderImpl(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n");
             }
-            boolean needsToCatchIO = currClass.isLayout || currClass.hasLayout;
+            boolean needsToCatchIO = currClass.depth == 0;
             if (!needsToCatchIO) {
                 needsToCatchIO = containsStringContentOrExpr(tokens, currClass.startTokenPos, currClass.endTokenPos);
             }
@@ -403,21 +417,22 @@ public class BBTemplateGen {
                 sb.append("        try {\n");
             }
 
-            if (currClass.hasLayout && !currClass.isLayout) {
-                sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().header(buffer);\n");
-            }
-
             if (currClass.isLayout) {
                 sb.append("            INSTANCE.header(buffer);\n")
                         .append("            INSTANCE.footer(buffer);\n");
             } else {
-                makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
+                if (currClass.depth == 0) {
+                sb.append("            ILayout currLayout = getTemplateLayout();\n")
+                        .append("            if (currLayout != null) {\n")
+                        .append("                currLayout.header(buffer);\n")
+                        .append("            }\n");
+                } makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
+                if (currClass.depth == 0) {
+                    sb.append("            if (currLayout != null) {\n")
+                            .append("                currLayout.footer(buffer);\n")
+                            .append("            }\n");
+                }
             }
-
-            if (currClass.hasLayout && !currClass.isLayout) {
-                sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().footer(buffer);\n");
-            }
-
             if (needsToCatchIO) {
                 sb.append("        } catch (IOException e) {\n")
                         .append("            throw new RuntimeException(e);\n")
@@ -461,7 +476,13 @@ public class BBTemplateGen {
                 sb.append("public static class ").reAppend(currClass.name).reAppend(" extends ").reAppend(currClass.superClass).reAppend(" {\n");
             }
 
-            sb.append("    private static ").reAppend(currClass.name).reAppend(" INSTANCE = new ").reAppend(currClass.name).reAppend("();\n\n");
+            sb.append("    private static ").reAppend(currClass.name).reAppend(" INSTANCE = new ").reAppend(currClass.name).reAppend("();\n");
+            if (currClass.hasLayout) {
+                sb.append("    private bb.runtime.ILayout myLayout = ").reAppend(currClass.layoutDir.className).reAppend(".asLayout();\n\n");
+            } else {
+                sb.append("    private bb.runtime.ILayout myLayout = null;\n\n");
+            }
+
 
         }
 
@@ -487,15 +508,14 @@ public class BBTemplateGen {
             addRender();
             addRenderInto();
             addRenderImpl();
+            addGetLayout();
             if (currClass.isLayout) {
                 addHeaderAndFooter();
             }
-
             for (ClassInfo nested : currClass.nestedClasses.values()) {
                 currClass = nested;
                 makeClassContent();
             }
-
             //close class
             sb.append("}\n");
         }
@@ -506,9 +526,10 @@ public class BBTemplateGen {
                     .append("    }\n\n");
             sb.append("    @Override\n")
                     .append("    public void header(Appendable buffer) throws IOException {\n");
-            if (currClass.hasLayout) {
-                sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().header(buffer);\n");
-            }
+            sb.append("        ILayout currLayout = getTemplateLayout();\n")
+                    .append("        if (currLayout != null) {\n")
+                    .append("            currLayout.header(buffer);\n")
+                    .append("        }\n");
             assert(currClass.depth == 0);
             makeFuncContent(currClass.startTokenPos, currClass.contentPos);
             sb.append("    }\n");
@@ -516,9 +537,10 @@ public class BBTemplateGen {
             sb.append("    @Override\n")
                     .append("    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(currClass.contentPos, currClass.endTokenPos);
-            if (currClass.hasLayout) {
-                sb.append("            ").reAppend(currClass.layoutDir.className).reAppend(".asLayout().footer(buffer);\n");
-            }
+            sb.append("        ILayout currLayout = getTemplateLayout();\n")
+                    .append("        if (currLayout != null) {\n")
+                    .append("            currLayout.footer(buffer);\n")
+                    .append("        }\n");
             sb.append("    }\n");
         }
 
