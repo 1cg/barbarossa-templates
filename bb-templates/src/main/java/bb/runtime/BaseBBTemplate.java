@@ -2,19 +2,42 @@ package bb.runtime;
 
 import bb.BBTemplates;
 
+import java.io.IOException;
+
 public class BaseBBTemplate {
-    private ILayout myLayout = null;
+    private ILayout _explicitLayout = null;
 
     public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 
-    public void beforeRender(Appendable buffer) {
-        //TODO: Search for layout and append the layout header
+    protected void setLayout(ILayout layout) {
+        _explicitLayout = layout;
     }
 
-    public void afterRender(Appendable buffer) {
-        //TODO: Search for the layout and append the footer
+    protected ILayout getTemplateLayout() {
+        if (_explicitLayout != null) {
+            return _explicitLayout;
+        } else {
+            return BBTemplates.getDefaultTemplate(this.getClass().getName());
+        }
+    }
+
+    protected void beforeRender(Appendable buffer, boolean outerTemplate) throws IOException {
+        if (outerTemplate) {
+            ILayout templateLayout = getTemplateLayout();
+            templateLayout.header(buffer);
+        }
+    }
+
+    protected void afterRender(Appendable buffer, boolean outerTemplate) throws IOException {
+        if (outerTemplate) {
+            ILayout templateLayout = getTemplateLayout();
+            templateLayout.footer(buffer);
+        }
+    }
+
+    protected void afterAfterRender(Appendable buffer) {
     }
 
 }

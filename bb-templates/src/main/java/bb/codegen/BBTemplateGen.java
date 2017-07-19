@@ -391,25 +391,16 @@ public class BBTemplateGen {
             return false;
         }
 
-        private void addGetLayout() {
-            if (currClass.depth == 0) {
-                sb.append("        private bb.runtime.ILayout getTemplateLayout() {\n")
-                        .append("        if (this.myLayout != null) {\n")
-                        .append("            return this.myLayout;\n")
-                        .append("        } else {\n")
-                        .append("            return BBTemplates.getDefaultTemplate(\"").reAppend(currClass.name).reAppend("\");\n")
-                        .append("        }\n")
-                        .append("    }");
-            }
-        }
-
         private void addRenderImpl() {
+
             if (currClass.paramsList == null) {
                 sb.append("    public void renderImpl(Appendable buffer) {\n");
             } else {
                 sb.append("    public void renderImpl(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n");
             }
+
             boolean needsToCatchIO = currClass.depth == 0;
+
             if (!needsToCatchIO) {
                 needsToCatchIO = containsStringContentOrExpr(tokens, currClass.startTokenPos, currClass.endTokenPos);
             }
@@ -422,19 +413,22 @@ public class BBTemplateGen {
                 sb.append("            INSTANCE.header(buffer);\n")
                         .append("            INSTANCE.footer(buffer);\n");
             } else {
-                if (currClass.depth == 0) {
-                sb.append("            ILayout currLayout = getTemplateLayout();\n")
-                        .append("            currLayout.header(buffer);\n");
-                } makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
-                if (currClass.depth == 0) {
-                            sb.append("            currLayout.footer(buffer);\n");
-                }
+
+                sb.append("            beforeRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
+
+                makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
+
+                sb.append("            afterRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
             }
+
             if (needsToCatchIO) {
                 sb.append("        } catch (IOException e) {\n")
                         .append("            throw new RuntimeException(e);\n")
-                        .append("        }\n");
+                        .append("        } finally {\n")
+                        .append("            afterAfterRender(buffer);\n")
+                        .append("        } \n");
             }
+
             //close the renderImpl
             sb.append("    }\n\n");
         }
@@ -475,12 +469,11 @@ public class BBTemplateGen {
             }
 
             sb.append("    private static ").reAppend(currClass.name).reAppend(" INSTANCE = new ").reAppend(currClass.name).reAppend("();\n");
+            sb.append("    private ").reAppend(currClass.name).reAppend("(){\n");
             if (currClass.hasLayout) {
-                sb.append("    private bb.runtime.ILayout myLayout = ").reAppend(currClass.layoutDir.className).reAppend(".asLayout();\n\n");
-            } else {
-                sb.append("    private bb.runtime.ILayout myLayout = null;\n\n");
+                sb.append("        setLayout(").reAppend(currClass.layoutDir.className).reAppend(".asLayout());\n");
             }
-
+            sb.append("}\n\n");
 
         }
 
@@ -506,7 +499,6 @@ public class BBTemplateGen {
             addRender();
             addRenderInto();
             addRenderImpl();
-            addGetLayout();
             if (currClass.isLayout) {
                 addHeaderAndFooter();
             }
