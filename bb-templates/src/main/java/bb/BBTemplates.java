@@ -21,7 +21,7 @@ public class BBTemplates {
     }
 
     public static void setDefaultTemplate(String somePackage, ILayout layout) {
-\        defaultTemplates.put(somePackage, layout);
+        defaultTemplates.put(somePackage, layout);
     }
 
     public static ILayout getDefaultTemplate(String packageName) {
