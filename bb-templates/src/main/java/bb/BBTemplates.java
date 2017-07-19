@@ -25,19 +25,13 @@ public class BBTemplates {
     }
 
     public static ILayout getDefaultTemplate(String packageName) {
-        while (packageName.length() > 0) {
-            if (defaultTemplates.containsKey(packageName)) {
-                return defaultTemplates.get(packageName);
-            } else {
-                int lastIndex = packageName.lastIndexOf('.');
-                if (lastIndex > 0) {
-                    packageName = packageName.substring(0, lastIndex);
-                } else {
-                    packageName = "";
-                }
-            }
+        if (defaultTemplates.containsKey(packageName)) {
+            return defaultTemplates.get(packageName);
+        } else if (packageName.indexOf('.') > 0) {
+            return getDefaultTemplate(packageName.substring(0, packageName.lastIndexOf('.')));
+        } else {
+            return defaultTemplates.get("");
         }
-        return defaultTemplates.get("");
     }
 
 }
