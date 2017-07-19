@@ -1,7 +1,9 @@
 package bb.runtime;
 
+import bb.BBTemplates;
+
 public class BaseBBTemplate {
-    private ILayout myLayout = new DefaultLayout();
+    private ILayout myLayout = null;
 
     public String toS(Object o) {
         return o == null ? "" : o.toString();

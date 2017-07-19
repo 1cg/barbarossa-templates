@@ -478,7 +478,7 @@ public class BBTemplateGen {
             if (currClass.hasLayout) {
                 sb.append("    private bb.runtime.ILayout myLayout = ").reAppend(currClass.layoutDir.className).reAppend(".asLayout();\n\n");
             } else {
-                sb.append("    private bb.runtime.ILayout myLayout = new DefaultLayout();\n\n");
+                sb.append("    private bb.runtime.ILayout myLayout = null;\n\n");
             }
 
 
