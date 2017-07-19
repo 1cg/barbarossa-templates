@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class BaseBBTemplate {
     private ILayout _explicitLayout = null;
+    private ThreadLocal<ILayout> withLayout = new ThreadLocal<>();
 
     public String toS(Object o) {
         return o == null ? "" : o.toString();
@@ -15,8 +16,15 @@ public class BaseBBTemplate {
         _explicitLayout = layout;
     }
 
+    public BaseBBTemplate withLayout(ILayout layout) {
+        withLayout.set(layout);
+        return this;
+    }
+
     protected ILayout getTemplateLayout() {
-        if (_explicitLayout != null) {
+        if (withLayout.get() != null) {
+            return withLayout.get();
+        } else if (_explicitLayout != null) {
             return _explicitLayout;
         } else {
             return BBTemplates.getDefaultTemplate(this.getClass().getName());
@@ -38,6 +46,7 @@ public class BaseBBTemplate {
     }
 
     protected void afterAfterRender(Appendable buffer) {
+        withLayout.set(null);
     }
 
 }
