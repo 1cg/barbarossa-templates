@@ -3,23 +3,41 @@ package bb;
 import bb.runtime.DefaultLayout;
 import bb.runtime.ILayout;
 
+import java.util.HashMap;
+
 /**
  * Created by eim on 7/17/2017.
  * For configuration purposes
  */
 public class BBTemplates {
-    public static void setDefaultTemplate(Class layout) {
-
+    private static HashMap<String, ILayout> defaultTemplates;
+    static {
+        defaultTemplates = new HashMap<>();
+        defaultTemplates.put("", new DefaultLayout());
     }
 
-    public static void setDefaultTemplate(String somePackage, Class layout) {
+    public static void setDefaultTemplate(ILayout layout) {
+        defaultTemplates.put("", layout);
+    }
 
+    public static void setDefaultTemplate(String somePackage, ILayout layout) {
+\        defaultTemplates.put(somePackage, layout);
     }
 
     public static ILayout getDefaultTemplate(String packageName) {
-        //TODO: Search through map of templates to packageName,
-        //going from most specific to least specific.
-        return new DefaultLayout();
+        while (packageName.length() > 0) {
+            if (defaultTemplates.containsKey(packageName)) {
+                return defaultTemplates.get(packageName);
+            } else {
+                int lastIndex = packageName.lastIndexOf('.');
+                if (lastIndex > 0) {
+                    packageName = packageName.substring(0, lastIndex);
+                } else {
+                    packageName = "";
+                }
+            }
+        }
+        return defaultTemplates.get("");
     }
 
 }
