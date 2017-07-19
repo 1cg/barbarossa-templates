@@ -375,7 +375,7 @@ public class BBTemplateGen {
             sb.append("package ").reAppend(packageName + ";\n\n")
                     .append("import java.io.IOException;\n")
                     .append("import bb.BBTemplates;\n")
-                    .append("import bb.runtime.ILayout;\n\n");
+                    .append("import bb.runtime.*;\n\n");
             addImports(dirList);
             makeClassContent();
         }
@@ -402,6 +402,7 @@ public class BBTemplateGen {
                         .append("    }");
             }
         }
+
         private void addRenderImpl() {
             if (currClass.paramsList == null) {
                 sb.append("    public void renderImpl(Appendable buffer) {\n");
@@ -423,14 +424,10 @@ public class BBTemplateGen {
             } else {
                 if (currClass.depth == 0) {
                 sb.append("            ILayout currLayout = getTemplateLayout();\n")
-                        .append("            if (currLayout != null) {\n")
-                        .append("                currLayout.header(buffer);\n")
-                        .append("            }\n");
+                        .append("            currLayout.header(buffer);\n");
                 } makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
                 if (currClass.depth == 0) {
-                    sb.append("            if (currLayout != null) {\n")
-                            .append("                currLayout.footer(buffer);\n")
-                            .append("            }\n");
+                            sb.append("            currLayout.footer(buffer);\n");
                 }
             }
             if (needsToCatchIO) {
@@ -464,6 +461,7 @@ public class BBTemplateGen {
             }
         }
 
+        //TODO: RENAME
         private void addHeader() {
             sb.append("\n");
             if (currClass.depth == 0) {
@@ -480,7 +478,7 @@ public class BBTemplateGen {
             if (currClass.hasLayout) {
                 sb.append("    private bb.runtime.ILayout myLayout = ").reAppend(currClass.layoutDir.className).reAppend(".asLayout();\n\n");
             } else {
-                sb.append("    private bb.runtime.ILayout myLayout = null;\n\n");
+                sb.append("    private bb.runtime.ILayout myLayout = new DefaultLayout();\n\n");
             }
 
 
@@ -523,25 +521,20 @@ public class BBTemplateGen {
         private void addHeaderAndFooter() {
             sb.append("    static ").reAppend(LAYOUT_INTERFACE).reAppend(" asLayout() {\n")
                     .append("        return INSTANCE;\n")
-                    .append("    }\n\n");
-            sb.append("    @Override\n")
-                    .append("    public void header(Appendable buffer) throws IOException {\n");
-            sb.append("        ILayout currLayout = getTemplateLayout();\n")
-                    .append("        if (currLayout != null) {\n")
-                    .append("            currLayout.header(buffer);\n")
-                    .append("        }\n");
+                    .append("    }\n\n")
+                    .append("    @Override\n")
+                    .append("    public void header(Appendable buffer) throws IOException {\n")
+                    .append("        ILayout currLayout = getTemplateLayout();\n")
+                    .append("        currLayout.header(buffer);\n");
             assert(currClass.depth == 0);
             makeFuncContent(currClass.startTokenPos, currClass.contentPos);
-            sb.append("    }\n");
-
-            sb.append("    @Override\n")
+            sb.append("    }\n")
+                    .append("    @Override\n")
                     .append("    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(currClass.contentPos, currClass.endTokenPos);
             sb.append("        ILayout currLayout = getTemplateLayout();\n")
-                    .append("        if (currLayout != null) {\n")
-                    .append("            currLayout.footer(buffer);\n")
-                    .append("        }\n");
-            sb.append("    }\n");
+                    .append("        currLayout.footer(buffer);\n")
+                    .append("    }\n");
         }
 
         private List<Directive> getDirectivesList(List<Token> tokens) {

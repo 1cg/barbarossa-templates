@@ -1,5 +1,6 @@
 package bb;
 
+import bb.runtime.DefaultLayout;
 import bb.runtime.ILayout;
 
 /**
@@ -18,7 +19,7 @@ public class BBTemplates {
     public static ILayout getDefaultTemplate(String packageName) {
         //TODO: Search through map of templates to packageName,
         //going from most specific to least specific.
-        return null;
+        return new DefaultLayout();
     }
 
 }
