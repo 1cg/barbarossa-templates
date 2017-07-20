@@ -18,7 +18,7 @@ template is targeting (e.g. `index.bb.html`).
   * [Comments](#comments)
 - [Directive Keywords](#directive-keywords)
   * [`import`](#import)
-  * [`extends`](#extends)
+  * [`extend`](#extends)
   * [`include`](#include)
   * [`params`](#params)
   * [`section`](#section)
@@ -165,8 +165,8 @@ was necessary to be able to use `java.util.HashSet`.
 The location of import statements within the template file is irrelevant. Although it is idiomatic to include all imports
 at the beginning of the file, imports can be placed anywhere and will not affect the generated file.
 
-## `extends` ##
-The `extends` keyword is used to make a template extend a different base class, which can be used to provide
+## `extend` ##
+The `extend` keyword is used to make a template extend a different base class, which can be used to provide
 additional application specific functionality (e.g. Request and Response objects in a web application).
 
 Here is a practical example of the 'extends' keyword being used:
