@@ -4,6 +4,9 @@ import bb.BBTemplates;
 
 import java.io.IOException;
 
+import static bb.BBTemplates.getTracer;
+import static bb.BBTemplates.trace;
+
 public class BaseBBTemplate {
     private ILayout _explicitLayout = null;
     private ThreadLocal<ILayout> withLayout = new ThreadLocal<>();
@@ -38,11 +41,13 @@ public class BaseBBTemplate {
         }
     }
 
-    protected void afterRender(Appendable buffer, boolean outerTemplate) throws IOException {
+    protected void afterRender(Appendable buffer, boolean outerTemplate, long renderTime) throws IOException {
         if (outerTemplate) {
             ILayout templateLayout = getTemplateLayout();
             templateLayout.footer(buffer);
         }
+        trace();
+        BBTemplates.getTracer().trace(this.getClass(), renderTime);
     }
 
     protected void afterAfterRender(Appendable buffer) {

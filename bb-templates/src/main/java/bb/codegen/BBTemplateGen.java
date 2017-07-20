@@ -413,12 +413,17 @@ public class BBTemplateGen {
                 sb.append("            INSTANCE.header(buffer);\n")
                         .append("            INSTANCE.footer(buffer);\n");
             } else {
-
                 sb.append("            beforeRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
+
+                sb.append("long startTime = System.nanoTime();\n");
 
                 makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
 
-                sb.append("            afterRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
+                sb.append("long endTime = System.nanoTime();\n");
+                sb.append("long duration = (endTime - startTime)/1000000;");
+
+                sb.append("            afterRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(", duration);\n");
+
             }
 
             if (needsToCatchIO) {
