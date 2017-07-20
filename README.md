@@ -18,7 +18,7 @@ template is targeting (e.g. `index.bb.html`).
   * [Comments](#comments)
 - [Directive Keywords](#directive-keywords)
   * [`import`](#import)
-  * [`extend`](#extends)
+  * [`extends`](#extends)
   * [`include`](#include)
   * [`params`](#params)
   * [`section`](#section)
@@ -115,7 +115,7 @@ Here are the valid types of directives:
 | Directive Type | Syntax                                      | Description                                                                         |
 |----------------|---------------------------------------------|-------------------------------------------------------------------------------------|
 | Import         | `<%@ import package %>`                     | Imports Java packages into the generated Java file                                  |
-| Extend         | `<%@ extend superclass %>`                  | Extends a superclass in the generated Java file                                     |
+| Extends         | `<%@ extends superclass %>`                  | Extends a superclass in the generated Java file                                     |
 | Params         | `<%@ params your-params-here %>`            | Gives parameters for the template                                                   |
 | Include        | `<%@ include otherTemplate %>`              | Include a separate template in the template                                         |
 | Section        | `<%@ section mySection(optional-params) %>` | Creates a sub-template within the template, that can be called from other templates |
@@ -165,8 +165,8 @@ was necessary to be able to use `java.util.HashSet`.
 The location of import statements within the template file is irrelevant. Although it is idiomatic to include all imports
 at the beginning of the file, imports can be placed anywhere and will not affect the generated file.
 
-## `extend` ##
-The `extend` keyword is used to make a template extend a different base class, which can be used to provide
+## `extends` ##
+The `extends` keyword is used to make a template extend a different base class, which can be used to provide
 additional application specific functionality (e.g. Request and Response objects in a web application).
 
 Here is a practical example of the 'extends' keyword being used:
