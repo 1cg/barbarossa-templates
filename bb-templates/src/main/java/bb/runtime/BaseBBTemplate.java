@@ -4,12 +4,9 @@ import bb.BBTemplates;
 
 import java.io.IOException;
 
-import static bb.BBTemplates.getTracer;
-import static bb.BBTemplates.trace;
-
 public class BaseBBTemplate {
+
     private ILayout _explicitLayout = null;
-    private ThreadLocal<ILayout> withLayout = new ThreadLocal<>();
 
     public String toS(Object o) {
         return o == null ? "" : o.toString();
@@ -19,39 +16,27 @@ public class BaseBBTemplate {
         _explicitLayout = layout;
     }
 
-    public BaseBBTemplate withLayout(ILayout layout) {
-        withLayout.set(layout);
-        return this;
-    }
-
     protected ILayout getTemplateLayout() {
-        if (withLayout.get() != null) {
-            return withLayout.get();
-        } else if (_explicitLayout != null) {
+        if (_explicitLayout != null) {
             return _explicitLayout;
         } else {
             return BBTemplates.getDefaultTemplate(this.getClass().getName());
         }
     }
 
-    protected void beforeRender(Appendable buffer, boolean outerTemplate) throws IOException {
+    protected void beforeRender(Appendable buffer, boolean outerTemplate, ILayout override) throws IOException {
         if (outerTemplate) {
-            ILayout templateLayout = getTemplateLayout();
+            ILayout templateLayout = override == null ? getTemplateLayout() : override;
             templateLayout.header(buffer);
         }
     }
 
-    protected void afterRender(Appendable buffer, boolean outerTemplate, long renderTime) throws IOException {
+    protected void afterRender(Appendable buffer, boolean outerTemplate, long renderTime, ILayout override) throws IOException {
         if (outerTemplate) {
-            ILayout templateLayout = getTemplateLayout();
+            ILayout templateLayout = override == null ? getTemplateLayout() : override;
             templateLayout.footer(buffer);
         }
-        trace();
         BBTemplates.getTracer().trace(this.getClass(), renderTime);
-    }
-
-    protected void afterAfterRender(Appendable buffer) {
-        withLayout.set(null);
     }
 
 }

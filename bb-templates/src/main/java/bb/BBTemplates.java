@@ -1,8 +1,6 @@
 package bb;
 
-import bb.runtime.DefaultLayout;
 import bb.runtime.ILayout;
-import com.sun.deploy.trace.Trace;
 
 import java.util.HashMap;
 
@@ -16,7 +14,7 @@ public class BBTemplates {
 
     static {
         DEFAULT_TEMPLATE_MAP = new HashMap<>();
-        DEFAULT_TEMPLATE_MAP.put("", new DefaultLayout());
+        DEFAULT_TEMPLATE_MAP.put("", ILayout.EMPTY);
     }
 
     public static void setDefaultTemplate(ILayout layout) {
@@ -38,10 +36,8 @@ public class BBTemplates {
     public static ILayout getDefaultTemplate(String packageName) {
         if (DEFAULT_TEMPLATE_MAP.containsKey(packageName)) {
             return DEFAULT_TEMPLATE_MAP.get(packageName);
-        } else if (packageName.indexOf('.') > 0) {
-            return getDefaultTemplate(packageName.substring(0, packageName.lastIndexOf('.')));
         } else {
-            return DEFAULT_TEMPLATE_MAP.get("");
+            return getDefaultTemplate(packageName.substring(0, Math.max(0, packageName.lastIndexOf('.'))));
         }
     }
 
