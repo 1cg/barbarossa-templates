@@ -438,13 +438,22 @@ public class BBTemplateGen {
 
         private void addRender() {
             if (currClass.paramsList == null) {
+                //without layout
                 sb.append("\n")
                         .append("    public static String render() {\n")
                         .append("        StringBuilder sb = new StringBuilder();\n")
                         .append("        renderInto(sb);\n")
                         .append("        return sb.toString();\n")
                         .append("    }\n\n");
+                //with layout
+                sb.append("\n")
+                        .append("    public static String render(ILayout overrideLayout) {\n")
+                        .append("        StringBuilder sb = new StringBuilder();\n")
+                        .append("        renderInto(sb, overrideLayout);\n")
+                        .append("        return sb.toString();\n")
+                        .append("    }\n\n");
             } else {
+                //without layout
                 sb.append("\n")
                         .append("    public static String render(").reAppend(currClass.params + ") {\n")
                         .append("        StringBuilder sb = new StringBuilder();\n")
@@ -455,9 +464,19 @@ public class BBTemplateGen {
                 sb.reAppend(");\n")
                         .append("        return sb.toString();\n")
                         .append("    }\n\n");
+                //with Layout
+                sb.append("\n")
+                        .append("    public static String render(ILayout overrideLayout, ").reAppend(currClass.params + ") {\n")
+                        .append("        StringBuilder sb = new StringBuilder();\n")
+                        .append("        renderInto(sb, overrideLayout");
+                for (String[] p : currClass.paramsList) {
+                    sb.reAppend(", ").reAppend(p[1]);
+                }
+                sb.reAppend(");\n")
+                        .append("        return sb.toString();\n")
+                        .append("    }\n\n");
             }
         }
-
         //TODO: RENAME
         private void addHeader() {
             sb.append("\n");
@@ -470,22 +489,25 @@ public class BBTemplateGen {
             } else {
                 sb.append("public static class ").reAppend(currClass.name).reAppend(" extends ").reAppend(currClass.superClass).reAppend(" {\n");
             }
-
             sb.append("    private static ").reAppend(currClass.name).reAppend(" INSTANCE = new ").reAppend(currClass.name).reAppend("();\n");
             sb.append("    private ").reAppend(currClass.name).reAppend("(){\n");
             if (currClass.hasLayout) {
                 sb.append("        setLayout(").reAppend(currClass.layoutDir.className).reAppend(".asLayout());\n");
             }
             sb.append("}\n\n");
-
         }
-
         private void addRenderInto() {
             if (currClass.paramsList == null) {
+                //without Layout
                 sb.append("    public static void renderInto(Appendable buffer) {\n")
                         .append("        INSTANCE.renderImpl(buffer, null);\n")
                         .append("    }\n\n");
+                //with Layout
+                sb.append("    public static void renderInto(Appendable buffer, ILayout overrideLayout) {\n")
+                        .append("        INSTANCE.renderImpl(buffer, overrideLayout);\n")
+                        .append("    }\n\n");
             } else {
+                //without Layout
                 sb.append("    public static void renderInto(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n")
                         .append("        INSTANCE.renderImpl(buffer, null");
                 for (String[] param: currClass.paramsList) {
@@ -493,10 +515,18 @@ public class BBTemplateGen {
                 }
                 sb.reAppend(");\n")
                         .append("    }\n\n");
+                //with Layout
+                sb.append("    public static void renderInto(Appendable buffer, ILayout overrideLayout, ").reAppend(currClass.params).reAppend(") {\n")
+                        .append("        INSTANCE.renderImpl(buffer, overrideLayout");
+                for (String[] param: currClass.paramsList) {
+                    sb.reAppend(", ").reAppend(param[1]);
+                }
+                sb.reAppend(");\n")
+                        .append("    }\n\n");
             }
-
         }
 
+        
         private void makeClassContent() {
             addHeader();
             addRender();
