@@ -60,7 +60,7 @@ public class DemoServer {
     public static <V> V dumpThreadsOnException(Callable<V> logic) {
         try {
             return logic.call();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
             for (Thread thread : allStackTraces.keySet()) {
                 System.out.print("Thread " + thread.getName());
