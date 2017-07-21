@@ -1,10 +1,14 @@
 package demo;
 
+import bb.BBTemplates;
 import bb.sparkjava.BBSparkTemplate;
 import demo.model.Message;
 import demo.views.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static spark.Spark.*;
 
@@ -16,17 +20,18 @@ public class DemoServer {
         staticFileLocation("/static");
 
         BBSparkTemplate.init();
+        BBTemplates.trace();
 
         get("/", (req, resp) -> {
             if (req.session().attribute("userName") == null) {
                 resp.redirect("/login");
                 return null;
             } else {
-                return Index.render(Message.getAllMessages(), req.session().attribute("userName"));
+                return dumpThreadsOnException(()-> Index.render(Message.getAllMessages(), req.session().attribute("userName")));
             }
         });
 
-        get("/login", (req, resp) -> Login.render());
+        get("/login", (req, resp) -> dumpThreadsOnException(()-> Login.render()));
 
         post("/login", (req, resp) -> {
             String login = req.queryParams("userName");
@@ -49,6 +54,28 @@ public class DemoServer {
             return Index.inputForm.render();
         });
 
-        get("/who", (req, resp) -> Index.who.render());
+        get("/who", (req, resp) -> dumpThreadsOnException(() -> Index.who.render()));
+    }
+
+    public static <V> V dumpThreadsOnException(Callable<V> logic) {
+        try {
+            return logic.call();
+        } catch (Exception e) {
+            Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+            for (Thread thread : allStackTraces.keySet()) {
+                System.out.print("Thread " + thread.getName());
+                if(Thread.currentThread() == thread) {
+                    System.out.println("[CURRENT THREAD]");
+                }
+                System.out.println("");
+                System.out.println("  ContextClassloader: " + thread.getContextClassLoader());
+                System.out.println("               State: " + thread.getState());
+                System.out.println("  StackTrace");
+                for (StackTraceElement stackTraceElement : allStackTraces.get(thread)) {
+                    System.out.println("    " + stackTraceElement.toString());
+                }
+            }
+            throw new RuntimeException(e);
+        }
     }
 }
