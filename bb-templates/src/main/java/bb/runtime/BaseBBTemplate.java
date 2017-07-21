@@ -24,14 +24,14 @@ public class BaseBBTemplate {
         }
     }
 
-    protected void beforeRender(Appendable buffer, boolean outerTemplate, ILayout override) throws IOException {
+    protected void beforeRender(Appendable buffer, ILayout override, boolean outerTemplate) throws IOException {
         if (outerTemplate) {
             ILayout templateLayout = override == null ? getTemplateLayout() : override;
             templateLayout.header(buffer);
         }
     }
 
-    protected void afterRender(Appendable buffer, boolean outerTemplate, long renderTime, ILayout override) throws IOException {
+    protected void afterRender(Appendable buffer, ILayout override, boolean outerTemplate, long renderTime) throws IOException {
         if (outerTemplate) {
             ILayout templateLayout = override == null ? getTemplateLayout() : override;
             templateLayout.footer(buffer);

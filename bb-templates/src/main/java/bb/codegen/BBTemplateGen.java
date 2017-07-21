@@ -394,9 +394,9 @@ public class BBTemplateGen {
         private void addRenderImpl() {
 
             if (currClass.paramsList == null) {
-                sb.append("    public void renderImpl(Appendable buffer) {\n");
+                sb.append("    public void renderImpl(Appendable buffer, ILayout overrideLayout) {\n");
             } else {
-                sb.append("    public void renderImpl(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n");
+                sb.append("    public void renderImpl(Appendable buffer, ILayout overrideLayout, ").reAppend(currClass.params).reAppend(") {\n");
             }
 
             boolean needsToCatchIO = currClass.depth == 0;
@@ -413,7 +413,7 @@ public class BBTemplateGen {
                 sb.append("            INSTANCE.header(buffer);\n")
                         .append("            INSTANCE.footer(buffer);\n");
             } else {
-                sb.append("            beforeRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
+                sb.append("            beforeRender(buffer, overrideLayout, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
 
                 sb.append("long startTime = System.nanoTime();\n");
 
@@ -422,16 +422,14 @@ public class BBTemplateGen {
                 sb.append("long endTime = System.nanoTime();\n");
                 sb.append("long duration = (endTime - startTime)/1000000;");
 
-                sb.append("            afterRender(buffer, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(", duration);\n");
+                sb.append("            afterRender(buffer, overrideLayout, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(", duration);\n");
 
             }
 
             if (needsToCatchIO) {
                 sb.append("        } catch (IOException e) {\n")
                         .append("            throw new RuntimeException(e);\n")
-                        .append("        } finally {\n")
-                        .append("            afterAfterRender(buffer);\n")
-                        .append("        } \n");
+                        .append("        }\n");
             }
 
             //close the renderImpl
@@ -485,11 +483,11 @@ public class BBTemplateGen {
         private void addRenderInto() {
             if (currClass.paramsList == null) {
                 sb.append("    public static void renderInto(Appendable buffer) {\n")
-                        .append("        INSTANCE.renderImpl(buffer);\n")
+                        .append("        INSTANCE.renderImpl(buffer, null);\n")
                         .append("    }\n\n");
             } else {
                 sb.append("    public static void renderInto(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n")
-                        .append("        INSTANCE.renderImpl(buffer");
+                        .append("        INSTANCE.renderImpl(buffer, null");
                 for (String[] param: currClass.paramsList) {
                     sb.reAppend(", ").reAppend(param[1]);
                 }
