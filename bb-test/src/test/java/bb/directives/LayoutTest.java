@@ -1,5 +1,7 @@
 package bb.directives;
 
+import bb.BBTemplates;
+import bb.runtime.ILayout;
 import org.junit.Test;
 import directives.layouts.*;
 
@@ -24,5 +26,26 @@ public class LayoutTest {
     @Test
     public void NestedLayoutTestWithContent() {
         assertEquals("HeaderH2ContentF2Footer", HasNestedLayout.render());
+    }
+
+    @Test
+    public void PlainOverrideLayoutTest() {
+        ILayout lo = IsLayout.asLayout();
+        assertEquals("HeaderPlainFooter", PlainFile.render(lo));
+    }
+
+//    @Test
+    //this test is so incredibly broken i don't know what to do ahhhhhhhhhhhhhhhhhhh
+//    public void PlainDefaultLayoutTest() {
+//        ILayout lo = IsLayout.asLayout();
+//        BBTemplates.setDefaultTemplate(lo);
+//        assertEquals("HeaderPlainFooter", PlainFile.render());
+//        BBTemplates.setDefaultTemplate("directives", IsLayout3.asLayout());
+//        assertEquals("3Plain4", PlainFile.render());
+//    }
+//
+//    @Test
+//    public void LayoutPrecedenceTest() {
+//        assertEquals("HeaderH2ContentF2Footer", HasNestedLayout.render());render
     }
 }

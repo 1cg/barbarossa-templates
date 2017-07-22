@@ -526,7 +526,7 @@ public class BBTemplateGen {
             }
         }
 
-        
+
         private void makeClassContent() {
             addHeader();
             addRender();
@@ -544,7 +544,7 @@ public class BBTemplateGen {
         }
 
         private void addHeaderAndFooter() {
-            sb.append("    static ").reAppend(LAYOUT_INTERFACE).reAppend(" asLayout() {\n")
+            sb.append("    public static ").reAppend(LAYOUT_INTERFACE).reAppend(" asLayout() {\n")
                     .append("        return INSTANCE;\n")
                     .append("    }\n\n")
                     .append("    @Override\n")
