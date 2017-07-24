@@ -24,6 +24,10 @@ public class BaseBBTemplate {
         }
     }
 
+    protected ILayout getExplicitLayout() {
+        return _explicitLayout;
+    }
+
     protected void beforeRender(Appendable buffer, ILayout override, boolean outerTemplate) throws IOException {
         if (outerTemplate) {
             ILayout templateLayout = override == null ? getTemplateLayout() : override;

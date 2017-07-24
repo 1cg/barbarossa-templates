@@ -549,17 +549,18 @@ public class BBTemplateGen {
                     .append("    }\n\n")
                     .append("    @Override\n")
                     .append("    public void header(Appendable buffer) throws IOException {\n")
-                    .append("        ILayout currLayout = getTemplateLayout();\n")
-                    .append("        currLayout.header(buffer);\n");
+                    .append("        if (getExplicitLayout() != null) {\n")
+                    .append("            getExplicitLayout().header(buffer);\n")
+                    .append("        }\n");
             assert(currClass.depth == 0);
             makeFuncContent(currClass.startTokenPos, currClass.contentPos);
             sb.append("    }\n")
                     .append("    @Override\n")
                     .append("    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(currClass.contentPos, currClass.endTokenPos);
-            sb.append("        ILayout currLayout = getTemplateLayout();\n")
-                    .append("        currLayout.footer(buffer);\n")
-                    .append("    }\n");
+            sb.append("        if (getExplicitLayout() != null) {\n")
+                    .append("            getExplicitLayout().footer(buffer);\n")
+                    .append("    }\n}\n");
         }
 
         private List<Directive> getDirectivesList(List<Token> tokens) {

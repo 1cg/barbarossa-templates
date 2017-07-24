@@ -34,18 +34,18 @@ public class LayoutTest {
         assertEquals("HeaderPlainFooter", PlainFile.render(lo));
     }
 
-//    @Test
+    @Test
     //this test is so incredibly broken i don't know what to do ahhhhhhhhhhhhhhhhhhh
-//    public void PlainDefaultLayoutTest() {
-//        ILayout lo = IsLayout.asLayout();
-//        BBTemplates.setDefaultTemplate(lo);
-//        assertEquals("HeaderPlainFooter", PlainFile.render());
-//        BBTemplates.setDefaultTemplate("directives", IsLayout3.asLayout());
-//        assertEquals("3Plain4", PlainFile.render());
-//    }
-//
-//    @Test
-//    public void LayoutPrecedenceTest() {
-//        assertEquals("HeaderH2ContentF2Footer", HasNestedLayout.render());render
+    public void PlainDefaultLayoutTest() {
+        ILayout lo = IsLayout.asLayout();
+        BBTemplates.setDefaultTemplate(lo);
+        assertEquals("HeaderPlainFooter", PlainFile.render());
+        BBTemplates.setDefaultTemplate("directives", IsLayout3.asLayout());
+        assertEquals("3Plain4", PlainFile.render());
+    }
+
+    @Test
+    public void LayoutPrecedenceTest() {
+        assertEquals("HeaderH2ContentF2Footer", HasNestedLayout.render());
     }
 }
