@@ -35,7 +35,6 @@ public class LayoutTest {
     }
 
     @Test
-    //this test is so incredibly broken i don't know what to do ahhhhhhhhhhhhhhhhhhh
     public void PlainDefaultLayoutTest() {
         ILayout lo = IsLayout.asLayout();
         BBTemplates.setDefaultTemplate(lo);
