@@ -208,8 +208,8 @@ public class BBTemplateGen {
                     className = token.getContent().substring(7).trim();
                     break;
                 case PARAMS:
-                    String content = token.getContent().substring(6);
-                    params = content.trim().substring(1, content.length() - 1);
+                    String content = token.getContent().substring(6).trim();
+                    params = content.substring(1, content.length() - 1);
                     paramsList = splitParamsList(params);
                     break;
                 case INCLUDE:
