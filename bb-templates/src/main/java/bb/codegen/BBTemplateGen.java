@@ -1,6 +1,5 @@
 package bb.codegen;
 
-import bb.runtime.ILayout;
 import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
 
@@ -120,7 +119,7 @@ public class BBTemplateGen {
 
                 }
             }
-            if (endSec == false) {
+            if (!endSec) {
                 if (depth == 0) {
                     assert(startTokenPos == 0);
                     //done with file
@@ -307,11 +306,11 @@ public class BBTemplateGen {
         //given a list of 2 element String lists (0th elem is type and 1st elem is value), returns the string form
         //ex. [[String, str],[int,5]] returns "String str, int 5"
         private String makeParamsString(String[][] paramsList) {
-            String params = "" + paramsList[0][0] + " " + paramsList[0][1];
+            StringBuilder params = new StringBuilder().append(paramsList[0][0]).append(" ").append(paramsList[0][1]);
             for (int i = 1; i < paramsList.length; i++) {
-                params += ", " + paramsList[i][0] + " " + paramsList[i][1];
+                params.append(", ").append(paramsList[i][0]).append(" ").append(paramsList[i][1]);
             }
-            return params;
+            return params.toString();
         }
 
         private void findParamTypes(String[][] params, int tokenPos, List<Token> tokens) {
@@ -326,11 +325,11 @@ public class BBTemplateGen {
         }
 
         private String makeParamsStringWithoutTypes(String[][] paramsList) {
-            String params = "" + paramsList[0][1];
+            StringBuilder params = new StringBuilder(paramsList[0][1]);
             for (int i = 1; i < paramsList.length; i++) {
-                params += ", " + paramsList[i][1];
+                params.append(", ").append(paramsList[i][1]);
             }
-            return params;
+            return params.toString();
         }
 
         private String inferSingleArgumentType(String name, int tokenPos, List<Token> tokens) {
@@ -356,10 +355,10 @@ public class BBTemplateGen {
                     Directive cur = new Directive(i, currentToken, tokens);
                     if (cur.dirType == DirType.PARAMS) {
                         String[][] outerClassParameters = cur.paramsList;
-                        for(int j = 0; j < outerClassParameters.length; j++) {
-                            String parameter = outerClassParameters[j][1];
+                        for(String[] currentParams: outerClassParameters) {
+                            String parameter = currentParams[1];
                             if (name.equals(parameter)) {
-                                return outerClassParameters[j][0];
+                                return currentParams[0];
                             }
                         }
                     }
@@ -380,7 +379,7 @@ public class BBTemplateGen {
             private final String INDENT = "    ";
             private StringBuilder sb = new StringBuilder();
 
-            public BBStringBuilder append(String content) {
+            BBStringBuilder append(String content) {
                 for (int i = 0; i < currClass.depth; i++) {
                     sb.append(INDENT);
                 }
@@ -388,7 +387,7 @@ public class BBTemplateGen {
                 return this;
             }
 
-            public BBStringBuilder reAppend(String content) {
+            BBStringBuilder reAppend(String content) {
                 sb.append(content);
                 return this;
             }
@@ -399,22 +398,22 @@ public class BBTemplateGen {
         }
 
 
-        public FileGenerator(String fullyQualifiedName, String source) {
+        FileGenerator(String fullyQualifiedName, String source) {
             String[] parts = fullyQualifiedName.split("\\.");
             String className = parts[parts.length - 1];
-            String packageName = parts[0];
+            StringBuilder packageName = new StringBuilder(parts[0]);
             for (int i = 1; i < parts.length - 1; i++) {
-                packageName += "." + parts[i];
+                packageName.append(".").append(parts[i]);
             }
             BBTokenizer tokenizer = new BBTokenizer();
             this.tokens = tokenizer.tokenize(source);
             List<Directive> dirList = getDirectivesList(tokens);
             this.dirMap = getDirectivesMap(dirList);
             this.currClass = new ClassInfo(dirList.iterator(), className, tokens.size() - 1, true);
-            buildFile(packageName, dirList);
+            buildFile(packageName.toString(), dirList);
         }
 
-        public String getFileContents() {
+        String getFileContents() {
             return sb.toString();
         }
 
@@ -524,8 +523,8 @@ public class BBTemplateGen {
                         .append("    }\n\n");
             }
         }
-        //TODO: RENAME
-        private void addHeader() {
+
+        private void addFileHeader() {
             sb.append("\n");
             if (currClass.depth == 0) {
                 if (currClass.isLayout) {
@@ -575,7 +574,7 @@ public class BBTemplateGen {
 
 
         private void makeClassContent() {
-            addHeader();
+            addFileHeader();
             addRender();
             addRenderInto();
             addRenderImpl();
@@ -623,7 +622,7 @@ public class BBTemplateGen {
         }
 
         private Map<Integer, Directive> getDirectivesMap(List<Directive> dirList) {
-            Map<Integer, Directive> dirMap = new HashMap();
+            Map<Integer, Directive> dirMap = new HashMap<>();
             for (Directive dir : dirList) {
                 dirMap.put(dir.tokenPos, dir);
             }
