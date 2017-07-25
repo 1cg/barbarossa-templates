@@ -38,4 +38,9 @@ public class SectionTest {
         assertEquals("Inference in Code Block (0)(1)(2)(3)(4)", InferenceInCodeBlock.render());
     }
 
+    @Test
+    public void doubleInferenceWorks() {
+        assertEquals("First Section: 10Second Section: 10", SectionWithinSection.render(10));
+    }
+
 }
