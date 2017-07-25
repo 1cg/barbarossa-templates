@@ -41,6 +41,7 @@ public class LayoutTest {
         assertEquals("HeaderPlainFooter", PlainFile.render());
         BBTemplates.setDefaultTemplate("directives", IsLayout3.asLayout());
         assertEquals("3Plain4", PlainFile.render());
+        BBTemplates.resetDefaultTemplates();
     }
 
     @Test

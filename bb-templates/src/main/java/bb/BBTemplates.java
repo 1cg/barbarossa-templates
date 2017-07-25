@@ -17,6 +17,10 @@ public class BBTemplates {
         DEFAULT_TEMPLATE_MAP.put("", ILayout.EMPTY);
     }
 
+    public static void resetDefaultTemplates() {
+        DEFAULT_TEMPLATE_MAP = new HashMap<>();
+        DEFAULT_TEMPLATE_MAP.put("", ILayout.EMPTY);
+    }
     public static void setDefaultTemplate(ILayout layout) {
         DEFAULT_TEMPLATE_MAP.put("", layout);
     }

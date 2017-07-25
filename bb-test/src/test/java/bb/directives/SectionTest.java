@@ -1,4 +1,4 @@
-package bb.comments;
+package bb.directives;
 
 import org.junit.Test;
 import directives.section.*;
