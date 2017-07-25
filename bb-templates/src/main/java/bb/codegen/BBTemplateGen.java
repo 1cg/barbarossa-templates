@@ -166,6 +166,7 @@ public class BBTemplateGen {
         //iff section and params only (include doesn't need it broken down bc types aren't given)
         String[][] paramsList;
 
+        //iff include
         String conditional;
 
         Directive(int tokenPos, Token token, List<Token> tokens) {
