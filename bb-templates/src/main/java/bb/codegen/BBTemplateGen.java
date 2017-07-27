@@ -1,6 +1,5 @@
 package bb.codegen;
 
-import bb.runtime.ILayout;
 import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
 
@@ -120,7 +119,7 @@ public class BBTemplateGen {
 
                 }
             }
-            if (endSec == false) {
+            if (!endSec) {
                 if (depth == 0) {
                     assert(startTokenPos == 0);
                     //done with file
@@ -143,7 +142,7 @@ public class BBTemplateGen {
             IMPORT,     //className
             EXTENDS,    //className
             PARAMS,     //           params, paramsList
-            INCLUDE,    //className, params
+            INCLUDE,    //className, params,            conditional
             SECTION,    //className, params, paramsList
             END_SECTION,//
             CONTENT,    //
@@ -155,7 +154,7 @@ public class BBTemplateGen {
         //imports "[class_name]"
         //extends "[class_name]"
         //params ([paramType paramName], [paramType paramName],...)                  <---nothing stored for params or end section
-        //include "[templateName]"([paramVal], [paramVal],...)
+        //include "[templateName]"([paramVal], [paramVal],...) (conditional)
         //section "[sectionName]"([paramType paramName], [paramType paramName],...)
         //end section
         String className;
@@ -165,6 +164,9 @@ public class BBTemplateGen {
 
         //iff section and params only (include doesn't need it broken down bc types aren't given)
         String[][] paramsList;
+
+        //iff include
+        String conditional;
 
         Directive(int tokenPos, Token token, List<Token> tokens) {
             assert (token.getType() == DIRECTIVE);
@@ -213,14 +215,15 @@ public class BBTemplateGen {
                     paramsList = splitParamsList(params);
                     break;
                 case INCLUDE:
-                    String[] parts = token.getContent().substring(8).trim().split("\\(", 2);
-                    className = parts[0];
-                    if (parts.length == 2) {
-                        String temp = parts[1].substring(0, parts[1].length() - 1).trim();
-                        if (temp.length() > 0) {
-                            params = temp;
-                        }
-                    }
+                    fillIncludeVars();
+//                    String[] parts = token.getContent().substring(8).trim().split("\\(", 2);
+//                    className = parts[0];
+//                    if (parts.length == 2) {
+//                        String temp = parts[1].substring(0, parts[1].length() - 1).trim();
+//                        if (temp.length() > 0) {
+//                            params = temp;
+//                        }
+//                    }
                     break;
                 case SECTION:
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
@@ -243,6 +246,49 @@ public class BBTemplateGen {
         }
 
         /**
+         * Helper method: Given that the type of token is INCLUDE, will parse through the content of the token
+         * and accordingly set className, params, and conditional. The format of an include statement is as follows:
+         * <%@ include templateNameHere[(optional-params)][if(optional conditional)] %>
+         * Note that in the if statement, parentheses around the conditional are optional.
+         */
+        private void fillIncludeVars() {
+            String content = token.getContent().substring(8).trim();
+            int index = 0;
+            while (index < content.length()) {
+                if (content.charAt(index) == '(') {
+                    this.className = content.substring(0, index).trim();
+                    this.params = content.substring(index + 1, content.indexOf(')'));
+                    fillConditional(content.substring(content.indexOf(')') + 1).trim());
+                    return;
+                } else if (index < content.length() - 2 && content.charAt(index) == ' ' && content.charAt(index + 1) == 'i' && content.charAt(index + 2) == 'f') {
+                    this.className = content.substring(0, index).trim();
+                    this.params = null;
+                    fillConditional(content.substring(index + 1).trim());
+                    return;
+                }
+                index += 1;
+            }
+            this.className = content;
+        }
+
+        /**
+         * Helper Method: Takes in a conditional, properly parses it, and sets this.conditional accordingly.
+         * @param conditional A statement as follows: if([INSERT CONDITIONAL HERE]), where parentheses are
+         *                    optional.
+         */
+        private void fillConditional(String conditional) {
+            if (conditional.length() < 2) {
+                return;
+            }
+            String conditionalWithoutIf = conditional.substring(2);
+            if (conditionalWithoutIf.charAt(0) == '(') {
+                this.conditional = conditionalWithoutIf.substring(1, conditionalWithoutIf.length() - 1);
+            } else {
+                this.conditional = conditionalWithoutIf;
+            }
+        }
+
+        /**
          * given a trimmed string of variables,
          * returns a list with a string list per variable with the type and variable name (when both are given)
          * or just the name if both aren't given
@@ -260,11 +306,11 @@ public class BBTemplateGen {
         //given a list of 2 element String lists (0th elem is type and 1st elem is value), returns the string form
         //ex. [[String, str],[int,5]] returns "String str, int 5"
         private String makeParamsString(String[][] paramsList) {
-            String params = "" + paramsList[0][0] + " " + paramsList[0][1];
+            StringBuilder params = new StringBuilder().append(paramsList[0][0]).append(" ").append(paramsList[0][1]);
             for (int i = 1; i < paramsList.length; i++) {
-                params += ", " + paramsList[i][0] + " " + paramsList[i][1];
+                params.append(", ").append(paramsList[i][0]).append(" ").append(paramsList[i][1]);
             }
-            return params;
+            return params.toString();
         }
 
         private void findParamTypes(String[][] params, int tokenPos, List<Token> tokens) {
@@ -279,11 +325,11 @@ public class BBTemplateGen {
         }
 
         private String makeParamsStringWithoutTypes(String[][] paramsList) {
-            String params = "" + paramsList[0][1];
+            StringBuilder params = new StringBuilder(paramsList[0][1]);
             for (int i = 1; i < paramsList.length; i++) {
-                params += ", " + paramsList[i][1];
+                params.append(", ").append(paramsList[i][1]);
             }
-            return params;
+            return params.toString();
         }
 
         private String inferSingleArgumentType(String name, int tokenPos, List<Token> tokens) {
@@ -309,10 +355,10 @@ public class BBTemplateGen {
                     Directive cur = new Directive(i, currentToken, tokens);
                     if (cur.dirType == DirType.PARAMS) {
                         String[][] outerClassParameters = cur.paramsList;
-                        for(int j = 0; j < outerClassParameters.length; j++) {
-                            String parameter = outerClassParameters[j][1];
+                        for(String[] currentParams: outerClassParameters) {
+                            String parameter = currentParams[1];
                             if (name.equals(parameter)) {
-                                return outerClassParameters[j][0];
+                                return currentParams[0];
                             }
                         }
                     }
@@ -333,7 +379,7 @@ public class BBTemplateGen {
             private final String INDENT = "    ";
             private StringBuilder sb = new StringBuilder();
 
-            public BBStringBuilder append(String content) {
+            BBStringBuilder append(String content) {
                 for (int i = 0; i < currClass.depth; i++) {
                     sb.append(INDENT);
                 }
@@ -341,7 +387,7 @@ public class BBTemplateGen {
                 return this;
             }
 
-            public BBStringBuilder reAppend(String content) {
+            BBStringBuilder reAppend(String content) {
                 sb.append(content);
                 return this;
             }
@@ -352,22 +398,22 @@ public class BBTemplateGen {
         }
 
 
-        public FileGenerator(String fullyQualifiedName, String source) {
+        FileGenerator(String fullyQualifiedName, String source) {
             String[] parts = fullyQualifiedName.split("\\.");
             String className = parts[parts.length - 1];
-            String packageName = parts[0];
+            StringBuilder packageName = new StringBuilder(parts[0]);
             for (int i = 1; i < parts.length - 1; i++) {
-                packageName += "." + parts[i];
+                packageName.append(".").append(parts[i]);
             }
             BBTokenizer tokenizer = new BBTokenizer();
             this.tokens = tokenizer.tokenize(source);
             List<Directive> dirList = getDirectivesList(tokens);
             this.dirMap = getDirectivesMap(dirList);
             this.currClass = new ClassInfo(dirList.iterator(), className, tokens.size() - 1, true);
-            buildFile(packageName, dirList);
+            buildFile(packageName.toString(), dirList);
         }
 
-        public String getFileContents() {
+        String getFileContents() {
             return sb.toString();
         }
 
@@ -415,12 +461,12 @@ public class BBTemplateGen {
             } else {
                 sb.append("            beforeRender(buffer, overrideLayout, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(");\n");
 
-                sb.append("long startTime = System.nanoTime();\n");
+                sb.append("            long startTime = System.nanoTime();\n");
 
                 makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
 
-                sb.append("long endTime = System.nanoTime();\n");
-                sb.append("long duration = (endTime - startTime)/1000000;");
+                sb.append("            long endTime = System.nanoTime();\n");
+                sb.append("            long duration = (endTime - startTime)/1000000;\n");
 
                 sb.append("            afterRender(buffer, overrideLayout, ").reAppend(String.valueOf(currClass.depth == 0)).reAppend(", duration);\n");
 
@@ -477,8 +523,8 @@ public class BBTemplateGen {
                         .append("    }\n\n");
             }
         }
-        //TODO: RENAME
-        private void addHeader() {
+
+        private void addFileHeader() {
             sb.append("\n");
             if (currClass.depth == 0) {
                 if (currClass.isLayout) {
@@ -528,7 +574,7 @@ public class BBTemplateGen {
 
 
         private void makeClassContent() {
-            addHeader();
+            addFileHeader();
             addRender();
             addRenderInto();
             addRenderImpl();
@@ -576,7 +622,7 @@ public class BBTemplateGen {
         }
 
         private Map<Integer, Directive> getDirectivesMap(List<Directive> dirList) {
-            Map<Integer, Directive> dirMap = new HashMap();
+            Map<Integer, Directive> dirMap = new HashMap<>();
             for (Directive dir : dirList) {
                 dirMap.put(dir.tokenPos, dir);
             }
@@ -631,10 +677,20 @@ public class BBTemplateGen {
 
         private void addInclude(Directive dir) {
             assert(dir.dirType == INCLUDE);
-            if (dir.params != null) {
-                sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(dir.params).reAppend(");\n");
+            if (dir.conditional == null) {
+                if (dir.params != null) {
+                    sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(dir.params).reAppend(");\n");
+                } else {
+                    sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer);\n");
+                }
             } else {
-                sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer);\n");
+                sb.append("            if(").reAppend(dir.conditional).reAppend("){\n");
+                if (dir.params != null) {
+                    sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(dir.params).reAppend(");\n");
+                } else {
+                    sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer);\n");
+                }
+                sb.append("            ").reAppend("}\n");
             }
         }
 

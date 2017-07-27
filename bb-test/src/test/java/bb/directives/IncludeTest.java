@@ -25,4 +25,15 @@ public class IncludeTest {
         assertEquals("Name:CarsonAge:2000", IncludeWithMultipleParams.render());
     }
 
+    @Test
+    public void conditionalIncludeWithParamsWorks() {
+        assertEquals("Carson", ConditionalIncludeWithParams.render(true));
+        assertEquals("", ConditionalIncludeWithParams.render(false));
+    }
+
+    @Test
+    public void conditionalIncludeWithoutParamsWorks() {
+        assertEquals("15", SimpleConditionalInclude.render(true));
+        assertEquals("", SimpleConditionalInclude.render(false));
+    }
 }
