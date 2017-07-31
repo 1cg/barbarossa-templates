@@ -3,6 +3,7 @@ package bb.runtime;
 import bb.BBTemplates;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class BaseBBTemplate {
 
@@ -41,6 +42,17 @@ public class BaseBBTemplate {
             templateLayout.footer(buffer);
         }
         BBTemplates.getTracer().trace(this.getClass(), renderTime);
+    }
+
+    protected Exception handleException(Exception e, String fileName, int lineStart) {
+        int lineNumber = e.getStackTrace()[0].getLineNumber();
+        StackTraceElement[] a = e.getStackTrace();
+        String declaringClass = a[1].getClassName();
+        String methodName = a[1].getMethodName();
+        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.html", lineNumber - lineStart);
+        a[1] = b;
+        e.setStackTrace(Arrays.copyOfRange(a, 1, a.length));
+        return e;
     }
 
 }
