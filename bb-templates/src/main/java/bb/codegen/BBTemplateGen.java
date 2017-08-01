@@ -413,11 +413,15 @@ public class BBTemplateGen {
             for (int i = 1; i < parts.length - 1; i++) {
                 packageName.append(".").append(parts[i]);
             }
+
             BBTokenizer tokenizer = new BBTokenizer();
             this.tokens = tokenizer.tokenize(source);
+            _issues.addAll(tokenizer.getIssues());
+
             List<Directive> dirList = getDirectivesList(tokens);
             this.dirMap = getDirectivesMap(dirList);
             this.currClass = new ClassInfo(dirList.iterator(), className, fileName, tokens.size() - 1, true);
+
             buildFile(packageName.toString(), dirList);
         }
 

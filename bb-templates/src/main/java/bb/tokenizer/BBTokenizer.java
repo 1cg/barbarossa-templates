@@ -4,12 +4,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
+
+import bb.manifold.BBIssue;
+import bb.manifold.BBIssueContainer;
 import bb.tokenizer.Token.TokenType;
+import manifold.internal.javac.IIssue;
 
 import static bb.tokenizer.Token.TokenType.*;
 
 public class BBTokenizer   {
-    static class TokenBuilder implements Iterator<Token> {
+    private List<BBIssue> _issues = new ArrayList<>();
+
+    class TokenBuilder implements Iterator<Token> {
         String tokenString;
         int line, col;
         int index;
@@ -59,9 +65,7 @@ public class BBTokenizer   {
             int col = this.col;
             int line = this.line;
             Token toReturn;
-            if (nextType == STRING_CONTENT) {
-                toReturn = next(nextType, false, line, col, pos,"<%", "${");
-            } else if (nextType == STATEMENT) {
+            if (nextType == STATEMENT) {
                 advancePosition(2);
                 toReturn = next(nextType, true, line, col, pos,"%>");
                 advancePosition(2);
@@ -84,8 +88,8 @@ public class BBTokenizer   {
                 advancePosition(4);
                 toReturn = next(nextType, false, line, col, pos,"--%>");
                 advancePosition(4);
-            } else {
-                throw new RuntimeException("Error at line " + line + "and column " + col);
+            } else { //String Content
+                toReturn = next(nextType, false, line, col, pos,"<%", "${");
             }
             return toReturn;
         }
@@ -136,7 +140,8 @@ public class BBTokenizer   {
             if (type == STRING_CONTENT) {
                 return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
             }
-            throw new RuntimeException("Error: " + type + " beginning at col " + col + " and line " + line + "is not closed");
+            addError("Tokenization Error: " + type + "is not closed", line);
+            return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
         }
 
         private boolean isModernExpressionSyntax() {
@@ -162,12 +167,12 @@ public class BBTokenizer   {
             return false;
         }
 
-        private void checkIllegalOpenings() {
+        private void checkIllegalOpenings() { //TODO: Figure out recovery when new statement is opened - probably just close it and go on
             if (tokenString.charAt(index) == '<' && peekForward() == '%') {
-                throw new RuntimeException("Attempted to open new statement within statement");
+                addError("Attempted to open new statement within statement", line);
             }
             if (tokenString.charAt(index) == '$' && peekForward() == '{') {
-                throw new RuntimeException("Attempted to open new expression within statement");
+                addError("Attempted to open new expression within statement", line);
             }
         }
 
@@ -217,6 +222,15 @@ public class BBTokenizer   {
             tokens.add(builder.next());
         }
         return tokens;
+    }
+
+    private void addError(String message, int line) {
+        BBIssue error = new BBIssue(IIssue.Kind.Error, 0, line, 0, message);
+        _issues.add( error );
+    }
+
+    public List<BBIssue> getIssues() {
+        return  _issues;
     }
 
 }
