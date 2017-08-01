@@ -39,15 +39,10 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
     }
 
     @Override
-    protected String produce(String topLevelFqn, String existing, BBModel model, DiagnosticListener<JavaFileObject> errrorHandler) {
-        IFile file = model.getFile();
-        try {
-            String templateSource = StreamUtil.getContent(new InputStreamReader(file.openInputStream()));
-            BBTemplateGen generator = new BBTemplateGen();
-            return generator.generateCode(topLevelFqn, templateSource);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    protected String produce(String topLevelFqn, String existing, BBModel model, DiagnosticListener<JavaFileObject> errorHandler) {
+        String source = model.getSource();
+        model.report( errorHandler );
+        return source;
     }
 
 }

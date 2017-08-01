@@ -44,7 +44,7 @@ public class BaseBBTemplate {
         BBTemplates.getTracer().trace(this.getClass(), renderTime);
     }
 
-    protected Exception handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
+    protected RuntimeException handleException(RuntimeException e, String fileName, int lineStart, int[] bbLineNumbers) {
         int lineNumber = e.getStackTrace()[0].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
         StackTraceElement[] a = e.getStackTrace();

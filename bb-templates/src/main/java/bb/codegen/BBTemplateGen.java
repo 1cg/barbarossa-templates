@@ -1,18 +1,24 @@
 package bb.codegen;
 
+import bb.manifold.BBIssue;
+import bb.manifold.BBIssueContainer;
 import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
+import manifold.internal.javac.IIssue;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static bb.codegen.BBTemplateGen.Directive.DirType.*;
+import static bb.codegen.BBTemplateGen.DirType.*;
 import static bb.tokenizer.Token.TokenType.*;
 
 public class BBTemplateGen {
     private final String BASE_CLASS_NAME = "bb.runtime.BaseBBTemplate";
     private final String LAYOUT_INTERFACE = "bb.runtime.ILayout";
+    private List<BBIssue> _issues = new ArrayList<>();
 
     class ClassInfo {
         Map<Integer, ClassInfo> nestedClasses = new HashMap<>();
@@ -116,6 +122,8 @@ public class BBTemplateGen {
                             layoutDir = dir;
                         }
                         break;
+                    case ERRANT:
+                        //continue;
 
                 }
             }
@@ -134,22 +142,24 @@ public class BBTemplateGen {
         }
     }
 
-    static class Directive {
+    protected enum DirType {
+        IMPORT,     //className
+        EXTENDS,    //className
+        PARAMS,     //           params, paramsList
+        INCLUDE,    //className, params,            conditional
+        SECTION,    //className, params, paramsList
+        END_SECTION,//
+        CONTENT,    //
+        LAYOUT,      //className
+        ERRANT      //the directive is invalid
+    }
+
+    class Directive {
         int tokenPos;
+
         Token token;
 
-        protected enum DirType {
-            IMPORT,     //className
-            EXTENDS,    //className
-            PARAMS,     //           params, paramsList
-            INCLUDE,    //className, params,            conditional
-            SECTION,    //className, params, paramsList
-            END_SECTION,//
-            CONTENT,    //
-            LAYOUT      //className
-        }
-
-        Directive.DirType dirType;
+        DirType dirType;
 
         //imports "[class_name]"
         //extends "[class_name]"
@@ -197,7 +207,8 @@ public class BBTemplateGen {
             } else if (content.trim().matches("layout.*")) {
                 dirType = LAYOUT;
             } else {
-                throw new RuntimeException("Unsupported Directive Type on Line " + token.getLine());
+                addError("Unsupported Directive Type", token.getLine());
+                dirType = ERRANT;
             }
         }
 
@@ -241,6 +252,8 @@ public class BBTemplateGen {
                     break;
                 case LAYOUT:
                     className = token.getContent().substring(6).trim();
+                    break;
+                case ERRANT:
                     break;
             }
         }
@@ -353,7 +366,7 @@ public class BBTemplateGen {
                     }
                 } else if (currentToken.getType() == DIRECTIVE) {
                     Directive cur = new Directive(i, currentToken, tokens);
-                    if (cur.dirType == DirType.PARAMS) {
+                    if (cur.dirType == PARAMS) {
                         String[][] outerClassParameters = cur.paramsList;
                         for(String[] currentParams: outerClassParameters) {
                             String parameter = currentParams[1];
@@ -684,7 +697,7 @@ public class BBTemplateGen {
             }
             String nums = bbLineNumbers.toString().substring(1, bbLineNumbers.toString().length() - 1);
 
-            sb.append("            } catch (Exception e) {\n");
+            sb.append("            } catch (RuntimeException e) {\n");
             sb.append("                int[] bbLineNumbers = new int[]{").reAppend(nums).reAppend("};\n");
             sb.append("                throw handleException(e, \"").reAppend(this.currClass.name).reAppend("\", lineStart, bbLineNumbers);\n            }\n");
         }
@@ -726,4 +739,12 @@ public class BBTemplateGen {
         return generator.getFileContents();
     }
 
+    private void addError(String message, int line) {
+        BBIssue error = new BBIssue(IIssue.Kind.Error, 0, line, 0, message);
+        _issues.add( error );
+    }
+
+    public BBIssueContainer getIssues() {
+        return new BBIssueContainer( _issues );
+    }
 }
