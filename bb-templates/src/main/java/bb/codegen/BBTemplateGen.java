@@ -75,10 +75,10 @@ public class BBTemplateGen {
                             if (superClass.equals(BASE_CLASS_NAME)) {
                                 superClass = dir.className;
                             } else {
-                                throw new RuntimeException("Invalid Extends Directive on line " + dir.token.getLine() + "class cannot extend 2 classes.");
+                                addError("Invalid Extends Directive: class cannot extend 2 classes", dir.token.getLine());
                             }
                         } else {
-                            throw new RuntimeException("Invalid Extends Directive inside a section on line " + dir.token.getLine() + ".");
+                            addError("Invalid Extends Directive: class cannot extend within section", dir.token.getLine());
                         }
 
                         break;
@@ -88,10 +88,10 @@ public class BBTemplateGen {
                                 params = dir.params;
                                 paramsList = dir.paramsList;
                             } else {
-                                throw new RuntimeException("Invalid Params Directive on line " + dir.token.getLine() + "cannot have 2 Params Directives.");
+                                addError("Invalid Params Directive: class cannot have 2 params directives", dir.token.getLine());
                             }
                         } else {
-                            throw new RuntimeException("Invalid Params Directive on line " + dir.token.getLine() + "cannot have Param Directive within section.");
+                            addError("Invalid Params Directive: class cannot have param directive within section", dir.token.getLine());
                         }
                         break;
                     case SECTION:
@@ -101,15 +101,15 @@ public class BBTemplateGen {
                         if (endTokenPos == null) {
                             endTokenPos = dir.tokenPos;
                         } else {
-                            throw new RuntimeException("End Section Directive without matching Section Directive on line " + endTokenPos + ".");
+                            addError("Invalid End Section Directive: section declaration does not exist", dir.token.getLine());
                         }
                         endSec = true;
                         break outerLoop;
                     case CONTENT:
                         if (isLayout) {
-                            throw new RuntimeException("Second Content Directive appears on line " + dir.token.getLine());
+                            addError("Invalid Layout Instantiation: cannot have two layout instantiations", dir.token.getLine());
                         } else if (depth > 0) {
-                            throw new RuntimeException("Cannot have a Content Directive inside a section. Appears on line " + dir.token.getLine());
+                            addError("Invalid Layout Instantiation: cannot instantiate layout within section", dir.token.getLine());
                         } else {
                             isLayout = true;
                             contentPos = dir.tokenPos;
@@ -117,9 +117,9 @@ public class BBTemplateGen {
                         break;
                     case LAYOUT:
                         if (hasLayout) {
-                            throw new RuntimeException("Second Layout Directive appears on line " + dir.token.getLine());
+                            addError("Invalid Layout Declaration: cannot have two layout declarations", dir.token.getLine());
                         } else if (depth > 0) {
-                            throw new RuntimeException("Cannot have a Layout Directive inside a section. Appears on line " + dir.token.getLine());
+                            addError("Invalid Layout Declaration: cannot declare layout within section", dir.token.getLine());
                         } else {
                             hasLayout = true;
                             layoutDir = dir;
@@ -133,9 +133,8 @@ public class BBTemplateGen {
             if (!endSec) {
                 if (depth == 0) {
                     assert(startTokenPos == 0);
-                    //done with file
                 } else {
-                    throw new RuntimeException("File ended before " + name + "section ended.");
+                    addError("Reached end of file before parsing section: " + name, 0); //TODO: Fix this to get the correct line number (of the end of the file?)
                 }
             }
         }
@@ -230,14 +229,6 @@ public class BBTemplateGen {
                     break;
                 case INCLUDE:
                     fillIncludeVars();
-//                    String[] parts = token.getContent().substring(8).trim().split("\\(", 2);
-//                    className = parts[0];
-//                    if (parts.length == 2) {
-//                        String temp = parts[1].substring(0, parts[1].length() - 1).trim();
-//                        if (temp.length() > 0) {
-//                            params = temp;
-//                        }
-//                    }
                     break;
                 case SECTION:
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
@@ -380,7 +371,8 @@ public class BBTemplateGen {
                     }
                 }
             }
-            throw new RuntimeException("Type for argument can not be inferred: " + name);
+            addError("Type for argument can not be inferred: " + name, token.getLine());
+            return "";
         }
 
     }
