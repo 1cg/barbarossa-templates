@@ -48,7 +48,7 @@ public class BaseBBTemplate {
     }
 
     protected void handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
-        if (e.getClass().equals(BBException.class)) {
+        if (e.getClass().equals(BBRuntimeException.class)) {
             try {
                 Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
                 theUnsafe.setAccessible(true);
@@ -70,7 +70,7 @@ public class BaseBBTemplate {
         currentStack[1] = b;
 
         e.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
-        BBException exceptionToThrow = new BBException(e);
+        BBRuntimeException exceptionToThrow = new BBRuntimeException(e);
         exceptionToThrow.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
 
         try {
