@@ -44,7 +44,7 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
         try {
             String templateSource = StreamUtil.getContent(new InputStreamReader(file.openInputStream()));
             BBTemplateGen generator = new BBTemplateGen();
-            return generator.generateCode(topLevelFqn, templateSource);
+            return generator.generateCode(topLevelFqn, templateSource, file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
