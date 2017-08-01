@@ -4,6 +4,7 @@ import bb.manifold.BBIssue;
 import bb.manifold.BBIssueContainer;
 import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
+import manifold.api.fs.IFile;
 import manifold.internal.javac.IIssue;
 
 import java.util.*;

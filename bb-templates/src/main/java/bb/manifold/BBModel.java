@@ -29,7 +29,7 @@ class BBModel extends AbstractSingleFileModel {
         try {
             String templateSource = StreamUtil.getContent(new InputStreamReader(file.openInputStream()));
             BBTemplateGen generator = new BBTemplateGen();
-            _source = generator.generateCode(getFqn(), templateSource);
+            _source = generator.generateCode(getFqn(), templateSource, file);
             _issues = generator.getIssues();
         } catch (IOException e) {
             throw new RuntimeException(e);
