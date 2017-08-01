@@ -1,0 +1,4 @@
+Foo
+<% String y = null;
+    y.toString(); %>
+Bar
