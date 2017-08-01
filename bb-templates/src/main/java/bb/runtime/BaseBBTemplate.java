@@ -48,19 +48,36 @@ public class BaseBBTemplate {
     }
 
     protected void handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
-        int lineNumber = e.getStackTrace()[0].getLineNumber();
+        if (e.getClass().equals(BBException.class)) {
+            try {
+                Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+                theUnsafe.setAccessible(true);
+                Unsafe unsafe = (Unsafe) theUnsafe.get(null);
+                unsafe.throwException(e);
+            } catch (NoSuchFieldException|IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        StackTraceElement[] currentStack = e.getStackTrace();
+
+        int lineNumber = currentStack[0].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
-        StackTraceElement[] a = e.getStackTrace();
-        String declaringClass = a[1].getClassName();
-        String methodName = a[1].getMethodName();
-        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.txt", bbLineNumbers[javaLineNum]);
-        a[1] = b;
-        e.setStackTrace(Arrays.copyOfRange(a, 1, a.length));
+        String declaringClass = currentStack[1].getClassName();
+        String methodName = currentStack[1].getMethodName();
+
+        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName, bbLineNumbers[javaLineNum]);
+        currentStack[1] = b;
+
+        e.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
+        BBException exceptionToThrow = new BBException(e);
+        exceptionToThrow.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
+
         try {
             Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafe.setAccessible(true);
             Unsafe unsafe = (Unsafe) theUnsafe.get(null);
-            unsafe.throwException(e);
+            unsafe.throwException(exceptionToThrow);
         } catch (NoSuchFieldException|IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
