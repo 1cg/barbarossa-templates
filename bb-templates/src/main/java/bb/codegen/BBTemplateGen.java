@@ -463,7 +463,6 @@ public class BBTemplateGen {
 
                 sb.append("            long startTime = System.nanoTime();\n");
 
-                sb.append("            int startingPoint = Thread.currentThread().getStackTrace()[1].getLineNumber();");
                 makeFuncContent(currClass.startTokenPos, currClass.endTokenPos);
 
                 sb.append("            long endTime = System.nanoTime();\n");
@@ -475,7 +474,7 @@ public class BBTemplateGen {
 
             if (needsToCatchIO) {
                 sb.append("        } catch (IOException e) {\n")
-                        .append("            throw new handleException(e, \"\", startingPoint, bbLineNumbers);\n")
+                        .append("            throw new RuntimeException(e);\n")
                         .append("        }\n");
             }
 
@@ -640,24 +639,27 @@ public class BBTemplateGen {
 
         private void makeFuncContent(int startPos, int endPos) {
             ArrayList<Integer> bbLineNumbers = new ArrayList<>();
+            sb.append("            int lineStart = Thread.currentThread().getStackTrace()[1].getLineNumber() + 1;\n");
 
+            sb.append("            try {\n");
             outerLoop:
             for (int i = startPos; i <= endPos; i++) {
                 Token token = tokens.get(i);
                 switch (token.getType()) {
                     case STRING_CONTENT:
-                        sb.append("            buffer.append(\"").reAppend(token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "\\\\n") + "\");\n");
+                        sb.append("                buffer.append(\"").reAppend(token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "\\\\n") + "\");\n");
                         bbLineNumbers.add(token.getLine());
                         break;
                     case STATEMENT:
                         String[] statementList = token.getContent().split("\n");
                         for (int j = 0; j < statementList.length; j++) {
-                            sb.append("            ").reAppend(token.getContent()).reAppend("\n");
+                            String statement = statementList[j].trim().replaceAll("\r", "");
+                            sb.append("                ").reAppend(statement).reAppend("\n");
                             bbLineNumbers.add(token.getLine() + j);
                         }
                         break;
                     case EXPRESSION:
-                        sb.append("            buffer.append(toS(").reAppend(token.getContent()).reAppend("));\n");
+                        sb.append("                buffer.append(toS(").reAppend(token.getContent()).reAppend("));\n");
                         bbLineNumbers.add(token.getLine());
                         break;
                     case COMMENT:
@@ -680,10 +682,13 @@ public class BBTemplateGen {
                         break;
                 }
             }
-            sb.append("\n");
             String nums = bbLineNumbers.toString().substring(1, bbLineNumbers.toString().length() - 1);
-            sb.append("int[] bbLineNumbers = new int[]{").reAppend(nums).reAppend("}\n");
+
+            sb.append("            } catch (Exception e) {\n");
+            sb.append("                int[] bbLineNumbers = new int[]{").reAppend(nums).reAppend("};\n");
+            sb.append("                throw handleException(e, \"").reAppend(this.currClass.name).reAppend("\", lineStart, bbLineNumbers);\n            }\n");
         }
+
 
         private void addInclude(Directive dir) {
             assert(dir.dirType == INCLUDE);
