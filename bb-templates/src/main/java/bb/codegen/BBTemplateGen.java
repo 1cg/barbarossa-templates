@@ -6,7 +6,6 @@ import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
 import manifold.internal.javac.IIssue;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -25,6 +24,7 @@ public class BBTemplateGen {
         String params = null;
         String[][] paramsList = null;
         String name;
+        String fileName;
         String superClass = BASE_CLASS_NAME;
         int startTokenPos;
         Integer endTokenPos;
@@ -35,9 +35,10 @@ public class BBTemplateGen {
         int contentPos;
 
         //only for the outermost class
-        ClassInfo(Iterator<Directive> dirIterator, String name, Integer endTokenPos, boolean outermost) {
+        ClassInfo(Iterator<Directive> dirIterator, String name, String fileName, Integer endTokenPos, boolean outermost) {
             assert(outermost);
             this.name = name;
+            this.fileName = fileName;
             this.startTokenPos = 0;
             this.endTokenPos = endTokenPos;
             this.depth = 0;
@@ -45,8 +46,9 @@ public class BBTemplateGen {
             fillClassInfo(dirIterator);
         }
 
-        ClassInfo(Iterator<Directive> dirIterator, String name, String params, String[][] paramList, int startTokenPos, int depth, String superClass) {
+        ClassInfo(Iterator<Directive> dirIterator, String name, String fileName, String params, String[][] paramList, int startTokenPos, int depth, String superClass) {
             this.name = name;
+            this.fileName = fileName;
             this.params = params;
             this.paramsList = paramList;
             this.startTokenPos = startTokenPos;
@@ -92,7 +94,7 @@ public class BBTemplateGen {
                         }
                         break;
                     case SECTION:
-                        addNestedClass(new ClassInfo(dirIterator, dir.className, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1, superClass));
+                        addNestedClass(new ClassInfo(dirIterator, dir.className, this.fileName, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1, superClass));
                         break;
                     case END_SECTION:
                         if (endTokenPos == null) {
@@ -411,7 +413,7 @@ public class BBTemplateGen {
         }
 
 
-        FileGenerator(String fullyQualifiedName, String source) {
+        FileGenerator(String fullyQualifiedName, String fileName, String source) {
             String[] parts = fullyQualifiedName.split("\\.");
             String className = parts[parts.length - 1];
             StringBuilder packageName = new StringBuilder(parts[0]);
@@ -422,7 +424,7 @@ public class BBTemplateGen {
             this.tokens = tokenizer.tokenize(source);
             List<Directive> dirList = getDirectivesList(tokens);
             this.dirMap = getDirectivesMap(dirList);
-            this.currClass = new ClassInfo(dirList.iterator(), className, tokens.size() - 1, true);
+            this.currClass = new ClassInfo(dirList.iterator(), className, fileName, tokens.size() - 1, true);
             buildFile(packageName.toString(), dirList);
         }
 
@@ -699,7 +701,7 @@ public class BBTemplateGen {
 
             sb.append("            } catch (RuntimeException e) {\n");
             sb.append("                int[] bbLineNumbers = new int[]{").reAppend(nums).reAppend("};\n");
-            sb.append("                throw handleException(e, \"").reAppend(this.currClass.name).reAppend("\", lineStart, bbLineNumbers);\n            }\n");
+            sb.append("                handleException(e, \"").reAppend(this.currClass.fileName).reAppend("\", lineStart, bbLineNumbers);\n            }\n");
         }
 
 
@@ -734,8 +736,8 @@ public class BBTemplateGen {
 
     }
 
-    public String generateCode(String fullyQualifiedName, String source) {
-        FileGenerator generator = new FileGenerator(fullyQualifiedName, source);
+    public String generateCode(String fullyQualifiedName, String source, IFile file) {
+        FileGenerator generator = new FileGenerator(fullyQualifiedName, file.getName(), source);
         return generator.getFileContents();
     }
 

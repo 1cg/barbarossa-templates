@@ -1,8 +1,11 @@
 package bb.runtime;
 
 import bb.BBTemplates;
+import sun.misc.Unsafe;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 public class BaseBBTemplate {
@@ -44,16 +47,40 @@ public class BaseBBTemplate {
         BBTemplates.getTracer().trace(this.getClass(), renderTime);
     }
 
-    protected RuntimeException handleException(RuntimeException e, String fileName, int lineStart, int[] bbLineNumbers) {
-        int lineNumber = e.getStackTrace()[0].getLineNumber();
+    protected void handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
+        if (e.getClass().equals(BBRuntimeException.class)) {
+            try {
+                Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+                theUnsafe.setAccessible(true);
+                Unsafe unsafe = (Unsafe) theUnsafe.get(null);
+                unsafe.throwException(e);
+            } catch (NoSuchFieldException|IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        StackTraceElement[] currentStack = e.getStackTrace();
+
+        int lineNumber = currentStack[0].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
-        StackTraceElement[] a = e.getStackTrace();
-        String declaringClass = a[1].getClassName();
-        String methodName = a[1].getMethodName();
-        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.html", bbLineNumbers[javaLineNum]);
-        a[1] = b;
-        e.setStackTrace(Arrays.copyOfRange(a, 1, a.length));
-        return e;
+        String declaringClass = currentStack[1].getClassName();
+        String methodName = currentStack[1].getMethodName();
+
+        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName, bbLineNumbers[javaLineNum]);
+        currentStack[1] = b;
+
+        e.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
+        BBRuntimeException exceptionToThrow = new BBRuntimeException(e);
+        exceptionToThrow.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
+
+        try {
+            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            Unsafe unsafe = (Unsafe) theUnsafe.get(null);
+            unsafe.throwException(exceptionToThrow);
+        } catch (NoSuchFieldException|IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }
