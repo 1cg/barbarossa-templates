@@ -2,6 +2,7 @@ package bb.codegen;
 
 import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
+import sun.misc.Unsafe;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -686,7 +687,7 @@ public class BBTemplateGen {
 
             sb.append("            } catch (Exception e) {\n");
             sb.append("                int[] bbLineNumbers = new int[]{").reAppend(nums).reAppend("};\n");
-            sb.append("                throw handleException(e, \"").reAppend(this.currClass.name).reAppend("\", lineStart, bbLineNumbers);\n            }\n");
+            sb.append("                handleException(e, \"").reAppend(this.currClass.name).reAppend("\", lineStart, bbLineNumbers);\n            }\n");
         }
 
 

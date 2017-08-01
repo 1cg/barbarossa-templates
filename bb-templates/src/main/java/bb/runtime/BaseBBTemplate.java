@@ -1,8 +1,11 @@
 package bb.runtime;
 
 import bb.BBTemplates;
+import sun.misc.Unsafe;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 public class BaseBBTemplate {
@@ -44,16 +47,23 @@ public class BaseBBTemplate {
         BBTemplates.getTracer().trace(this.getClass(), renderTime);
     }
 
-    protected Exception handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
+    protected void handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
         int lineNumber = e.getStackTrace()[0].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
         StackTraceElement[] a = e.getStackTrace();
         String declaringClass = a[1].getClassName();
         String methodName = a[1].getMethodName();
-        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.html", bbLineNumbers[javaLineNum]);
+        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.txt", bbLineNumbers[javaLineNum]);
         a[1] = b;
         e.setStackTrace(Arrays.copyOfRange(a, 1, a.length));
-        return e;
+        try {
+            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            Unsafe unsafe = (Unsafe) theUnsafe.get(null);
+            unsafe.throwException(e);
+        } catch (NoSuchFieldException|IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }
