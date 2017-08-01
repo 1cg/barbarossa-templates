@@ -44,12 +44,13 @@ public class BaseBBTemplate {
         BBTemplates.getTracer().trace(this.getClass(), renderTime);
     }
 
-    protected Exception handleException(Exception e, String fileName, int lineStart) {
+    protected Exception handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
         int lineNumber = e.getStackTrace()[0].getLineNumber();
+        int javaLineNum = lineNumber - lineStart;
         StackTraceElement[] a = e.getStackTrace();
         String declaringClass = a[1].getClassName();
         String methodName = a[1].getMethodName();
-        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.html", lineNumber - lineStart);
+        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName + ".bb.html", bbLineNumbers[javaLineNum]);
         a[1] = b;
         e.setStackTrace(Arrays.copyOfRange(a, 1, a.length));
         return e;
