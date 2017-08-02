@@ -1,8 +1,10 @@
 package bb.tokenizer;
 
+import bb.manifold.BBIssue;
 import bb.tokenizer.Token.TokenType;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -78,75 +80,63 @@ public class BBTokenizerTest {
     @Test
     public void statementErrorTest() {
         BBTokenizer tokenizer = new BBTokenizer();
-        boolean caught = false;
-        try {
-            tokenizer.tokenize("<% foo");
-            System.out.println("Failed to throw exception when not closing statement");
-        } catch (RuntimeException e) {
-            caught = true;
+        tokenizer.tokenize("<% foo");
+        tokenizer.tokenize("<% abc <% abc %> %>");
+        tokenizer.tokenize("<% ${ } %>");
+        tokenizer.tokenize("<% Abc <%@ abc %> %>");
+
+        List<String> expectedMessages = new ArrayList<>();
+        expectedMessages.add("Tokenization Error: STATEMENT is not closed");
+        expectedMessages.add("Attempted to open new statement within STATEMENT");
+        expectedMessages.add("Attempted to open new expression within STATEMENT");
+        expectedMessages.add("Attempted to open new directive within STATEMENT");
+
+        assertEquals(tokenizer.getIssues().size(), expectedMessages.size());
+        for(int i = 0; i < expectedMessages.size(); i += 1) {
+            assertEquals(tokenizer.getIssues().get(i).getMessage(), expectedMessages.get(i));
         }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("<% abc <% abc %> %>");
-            System.out.println("Failed to throw exception when opening statement within statement.");
-        } catch (RuntimeException e) {
-            caught = true;
+
+    }
+
+    @Test
+    public void directiveErrorTest() {
+        BBTokenizer tokenizer = new BBTokenizer();
+        tokenizer.tokenize("<%@ foo");
+        tokenizer.tokenize("<%@ abc <% abc %> %>");
+        tokenizer.tokenize("<%@ ${ } %>");
+        tokenizer.tokenize("<%@ Abc <%@ abc %> %>");
+
+        List<String> expectedMessages = new ArrayList<>();
+        expectedMessages.add("Tokenization Error: DIRECTIVE is not closed");
+        expectedMessages.add("Attempted to open new statement within DIRECTIVE");
+        expectedMessages.add("Attempted to open new expression within DIRECTIVE");
+        expectedMessages.add("Attempted to open new directive within DIRECTIVE");
+
+        assertEquals(tokenizer.getIssues().size(), expectedMessages.size());
+        for(int i = 0; i < expectedMessages.size(); i += 1) {
+            assertEquals(tokenizer.getIssues().get(i).getMessage(), expectedMessages.get(i));
         }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("<% ${ } %>");
-            System.out.println("Failed to throw exception when opening expression within statement.");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("<% Abc <%@ abc %> %>");
-            System.out.println("Failed to throw exception when opening directive within statement");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
     }
 
     @Test
     public void expressionErrorTest() {
         BBTokenizer tokenizer = new BBTokenizer();
-        boolean caught = false;
-        try {
-            tokenizer.tokenize("${ foo");
-            System.out.println("Failed to throw exception when not closing expression");
-        } catch (RuntimeException e) {
-            caught = true;
+        tokenizer.tokenize("${ foo");
+        tokenizer.tokenize("${ abc <% abc %> }");
+        tokenizer.tokenize("${ ${ } }");
+        tokenizer.tokenize("${ Abc <%@ abc %> }");
+
+        List<String> expectedMessages = new ArrayList<>();
+        expectedMessages.add("Tokenization Error: EXPRESSION is not closed");
+        expectedMessages.add("Attempted to open new statement within EXPRESSION");
+        expectedMessages.add("Attempted to open new expression within EXPRESSION");
+        expectedMessages.add("Attempted to open new directive within EXPRESSION");
+
+        assertEquals(tokenizer.getIssues().size(), expectedMessages.size());
+        for(int i = 0; i < expectedMessages.size(); i += 1) {
+            assertEquals(tokenizer.getIssues().get(i).getMessage(), expectedMessages.get(i));
         }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("${ abc <% abc %> }");
-            System.out.println("Failed to throw exception when opening statement within expression.");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("${ ${ } }");
-            System.out.println("Failed to throw exception when opening expression within expression.");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("${ Abc <%@ abc %> }");
-            System.out.println("Failed to throw exception when opening directive within expression");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
+
     }
 
     @Test
@@ -234,42 +224,6 @@ public class BBTokenizerTest {
                 STRING_CONTENT, DIRECTIVE, STRING_CONTENT);
     }
 
-    @Test
-    public void directiveErrorTest() {
-        BBTokenizer tokenizer = new BBTokenizer();
-        boolean caught = false;
-        try {
-            tokenizer.tokenize("<%@ foo");
-            System.out.println("Failed to throw exception when not closing directive");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("<%@ abc <% abc %> %>");
-            System.out.println("Failed to throw exception when opening statement within directive.");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("<%@ ${ } %>");
-            System.out.println("Failed to throw exception when opening expression within directive.");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        caught = false;
-        try {
-            tokenizer.tokenize("<%@ Abc <%@ abc %> %>");
-            System.out.println("Failed to throw exception when opening directive within directive");
-        } catch (RuntimeException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-    }
 
     @Test
     public void emptyTest() {
