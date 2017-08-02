@@ -132,7 +132,7 @@ public class BBTokenizer   {
                         }
                     }
                     if (type != COMMENT) {
-                        checkIllegalOpenings();
+                        checkIllegalOpenings(type);
                     }
                 }
                 advancePosition();
@@ -167,16 +167,21 @@ public class BBTokenizer   {
             return false;
         }
 
-        private void checkIllegalOpenings() {
+        private void checkIllegalOpenings(TokenType type) {
             if (tokenString.charAt(index) == '<' && peekForward() == '%') {
-                addError("Attempted to open new statement within statement", line);
+                if (peekForward(2) == '@') {
+                    addError("Attempted to open new directive within " + type, line);
+                } else if (peekForward(2) == '=') {
+                    addError("Attempted to open new expression within " + type, line);
+                } else {
+                    addError("Attempted to open new statement within " + type, line);
+                }
                 next();
             }
             if (tokenString.charAt(index) == '$' && peekForward() == '{') {
-                addError("Attempted to open new expression within statement", line);
+                addError("Attempted to open new expression within " + type, line);
                 next();
             }
-
         }
 
         /** Returns the correct token type to be parsed. */
