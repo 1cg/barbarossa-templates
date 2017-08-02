@@ -733,8 +733,8 @@ public class BBTemplateGen {
 
     }
 
-    public String generateCode(String fullyQualifiedName, String source, IFile file) {
-        FileGenerator generator = new FileGenerator(fullyQualifiedName, file.getName(), source);
+    public String generateCode(String fullyQualifiedName, String source, String fileName) {
+        FileGenerator generator = new FileGenerator(fullyQualifiedName, fileName, source);
         return generator.getFileContents();
     }
 
