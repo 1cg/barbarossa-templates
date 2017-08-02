@@ -140,7 +140,7 @@ public class BBTokenizer   {
             if (type == STRING_CONTENT) {
                 return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
             }
-            addError("Tokenization Error: " + type + "is not closed", line);
+            addError("Tokenization Error: " + type + " is not closed", line);
             return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
         }
 
@@ -167,13 +167,16 @@ public class BBTokenizer   {
             return false;
         }
 
-        private void checkIllegalOpenings() { //TODO: Figure out recovery when new statement is opened - probably just close it and go on
+        private void checkIllegalOpenings() {
             if (tokenString.charAt(index) == '<' && peekForward() == '%') {
                 addError("Attempted to open new statement within statement", line);
+                next();
             }
             if (tokenString.charAt(index) == '$' && peekForward() == '{') {
                 addError("Attempted to open new expression within statement", line);
+                next();
             }
+
         }
 
         /** Returns the correct token type to be parsed. */
@@ -198,13 +201,15 @@ public class BBTokenizer   {
         }
 
         private void advancePosition() {
-            char current = tokenString.charAt(index);
-            if (current == 10) {
-                this.line += 1;
-                this.col = 0;
+            if (index < this.tokenString.length()) {
+                char current = tokenString.charAt(index);
+                if (current == 10) {
+                    this.line += 1;
+                    this.col = 0;
+                }
+                this.col += 1;
+                index += 1;
             }
-            this.col += 1;
-            index += 1;
         }
 
         private void advancePosition(int i) {
