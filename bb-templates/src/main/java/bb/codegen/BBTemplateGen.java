@@ -683,8 +683,6 @@ public class BBTemplateGen {
                             i = classToSkipOver.endTokenPos;
                             addSection(dir);
                         } else if (dir.dirType == END_SECTION) {
-                            assert(i == endPos);
-                            assert(currClass.depth > 0);
                             break outerLoop;
                         } else if (dir.dirType == INCLUDE) {
                             addInclude(dir);
