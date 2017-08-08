@@ -438,7 +438,10 @@ public class BBTemplateGen {
             makeClassContent();
         }
 
-        private boolean containsStringContentOrExpr(List<Token> tokens, int start, int end) {
+        private boolean containsStringContentOrExpr(List<Token> tokens, Integer start, Integer end) {
+            if (end == null) {
+                end = tokens.size() - 1;
+            }
             for (int i = start; i <= end; i++) {
                 Token token = tokens.get(i);
                 Token.TokenType tokenType = token.getType();
@@ -460,7 +463,7 @@ public class BBTemplateGen {
             boolean needsToCatchIO = currClass.depth == 0;
 
             if (!needsToCatchIO) {
-                needsToCatchIO = containsStringContentOrExpr(tokens, currClass.startTokenPos, currClass.endTokenPos);
+                needsToCatchIO = containsStringContentOrExpr(tokens, currClass.startTokenPos - 1, currClass.endTokenPos);
             }
 
             if (needsToCatchIO) {
@@ -649,8 +652,11 @@ public class BBTemplateGen {
             }
         }
 
-        private void makeFuncContent(int startPos, int endPos) {
+        private void makeFuncContent(Integer startPos, Integer endPos) {
             ArrayList<Integer> bbLineNumbers = new ArrayList<>();
+            if (endPos == null) {
+                endPos = tokens.size() - 1;
+            }
             sb.append("            int lineStart = Thread.currentThread().getStackTrace()[1].getLineNumber() + 1;\n");
 
             sb.append("            try {\n");
@@ -680,7 +686,11 @@ public class BBTemplateGen {
                         Directive dir = dirMap.get(i);
                         if (dir.dirType == SECTION) {
                             ClassInfo classToSkipOver = currClass.nestedClasses.get(i + 1);
-                            i = classToSkipOver.endTokenPos;
+                            if (classToSkipOver.endTokenPos == null) {
+                                i = endPos;
+                            } else {
+                                i = classToSkipOver.endTokenPos;
+                            }
                             addSection(dir);
                         } else if (dir.dirType == END_SECTION) {
                             break outerLoop;
