@@ -17,14 +17,17 @@ template is targeting (e.g. `index.bb.html`).
   * [Directives](#directives)
   * [Comments](#comments)
 - [Directive Keywords](#directive-keywords)
-  * [`import`](#import)
-  * [`extends`](#extends)
-  * [`include`](#include)
-  * [`params`](#params)
-  * [`section`](#section)
-  * [`layouts`](#layout)
+  * [`import`](#-import-)
+  * [`extends`](#-extends-)
+  * [`include`](#-include-)
+    * [Conditional Include](#conditional-include)
+  * [`params`](#-params-)
+  * [`section`](#-section-)
+  * [`layouts`](#-layouts-)
 - [Layouts](#layouts)
-
+  * [Default Layouts](#default-layouts)
+- [Miscellaneous](#Miscellaneous)
+  * [Tracing](#Tracing)
 # Basic Syntax #
 
 As with JSPs, BB Templates consist of regular textual content with various scriptlets and
@@ -283,7 +286,18 @@ Both statements will result in the following HTML code:
 
 ```
 
-TODO: mention parameter passing
+### Conditional Include ###
+BBTemplates supports shorthand for conditional inclusion of templates. The following syntax:
+```jsp
+  <% if (condition) { %>
+    <%@ include myTemplate %>
+  <% } %>
+```
+Can be condensed to the following:
+```jsp
+<%@ include myTemplate if(condition) %>
+```
+(Note: In the above, parentheses are optional.)
 
 ## `params` ##
 
@@ -441,3 +455,26 @@ The above code will generate the following HTML:
     </html>
 ```
 
+## Default Layouts ##
+BB Templates also supports the ability to set default layouts for templates via the
+`BBTemplates.java` configuration class:
+```java
+  BBTemplates.setDefaultTemplate(myLayout); //Sets default template for all templates
+  BBTemplates.setDefaultTemplate("some.package", myLayout) //Sets default templates for all templates in "some.package"
+```
+By default, more specific layout declarations will take precedence over less
+specific ones. For example, templates with a declared layout (using the layout directive)
+will use the declared layout rather than any defualt layout.
+
+# Miscellaneous #
+
+## Tracing ##
+BBTemplates supports performance tracing via the following syntax:
+```java
+  BBTemplates.trace();
+```
+After invoking the `trace()` method, every following `render()` call will print
+the following to console:
+```
+  - Template [templateName] rendered in [timeToRender] ms
+```
