@@ -59,23 +59,23 @@ public class CompiletimeErrorTest {
     @Test
     public void SectionErrorTest() {
         BBTemplateGen generator = new BBTemplateGen();
-//        generator.generateCode("testing.tester",
-//                "<%@ section mySection %><%@ extends bb.directives.ExtendsTesterTemplate %><%@ end section %>",
-//                "tester.bb.html");
-//        generator.generateCode("testing.tester",
-//                "<%@ section mySection %><%@ params(String name, int age) %><%@ end section %>",
-//                "tester.bb.html");
-//        generator.generateCode("testing.tester",
-//                "<%@ end section %>",
-//                "tester.bb.html");
+        generator.generateCode("testing.tester",
+                "<%@ section mySection %><%@ extends bb.directives.ExtendsTesterTemplate %><%@ end section %>",
+                "tester.bb.html");
+        generator.generateCode("testing.tester",
+                "<%@ section mySection %><%@ params(String name, int age) %><%@ end section %>",
+                "tester.bb.html");
+        generator.generateCode("testing.tester",
+                "<%@ end section %>",
+                "tester.bb.html");
         generator.generateCode("testing.tester",
                 "<%@ section MySection %>",
                 "tester.bb.html");
 
         List<String> expectedMessages = new ArrayList<>();
-//        expectedMessages.add("Invalid Extends Directive: class cannot extend within section");
-//        expectedMessages.add("Invalid Params Directive: class cannot have param directive within section");
-//        expectedMessages.add("Invalid End Section Directive: section declaration does not exist");
+        expectedMessages.add("Invalid Extends Directive: class cannot extend within section");
+        expectedMessages.add("Invalid Params Directive: class cannot have param directive within section");
+        expectedMessages.add("Invalid End Section Directive: section declaration does not exist");
         expectedMessages.add("Reached end of file before parsing section: MySection");
 
 
