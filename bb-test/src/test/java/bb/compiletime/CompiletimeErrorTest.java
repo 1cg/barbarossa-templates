@@ -127,5 +127,25 @@ public class CompiletimeErrorTest {
         }
 
     }
+    @Test
+    public void UnsupportedTypeErrorTest() {
+        BBTemplateGen generator = new BBTemplateGen();
+        generator.generateCode("testing.tester",
+                "<%@ invalidDirective %>",
+                "tester.bb.html");
+        generator.generateCode("testing.tester",
+                "<%@ section MySection(apple) %> <%@ end section %>",
+                "tester.bb.html");
+
+        List<String> expectedMessages = new ArrayList<>();
+        expectedMessages.add("Unsupported Directive Type");
+        expectedMessages.add("Type for argument can not be inferred: apple");
+
+        assertEquals(expectedMessages.size(), generator.getIssues().getIssues().size());
+        for(int i = 0; i < expectedMessages.size(); i += 1) {
+            assertEquals(generator.getIssues().getIssues().get(i).getMessage(), expectedMessages.get(i));
+        }
+
+    }
 
 }
