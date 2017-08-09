@@ -20,7 +20,13 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
 
     @Override
     protected String aliasFqn(String fqn, IFile file) {
-        return fqn.endsWith( "_bb" ) ? fqn.substring( 0, fqn.length()-3 ) : fqn;
+        String extention;
+        if (file.getBaseName().split("\\.").length == 2) {
+            extention = "_" + file.getBaseName().split("\\.")[1];
+        } else {
+            extention = null;
+        }
+        return (extention != null && fqn.endsWith(extention)) ? fqn.substring(0, fqn.indexOf(extention)) : fqn;
     }
 
     @Override
@@ -30,12 +36,12 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
 
     @Override
     public boolean handlesFileExtension(String fileExtension) {
-        return true;
+        return fileExtension.equals("bb");
     }
 
     @Override
     public boolean handlesFile(IFile file) {
-        return file.getBaseName().endsWith(".bb") || file.getExtension().equals("bb");
+        return file.getExtension().equals("bb");
     }
 
     @Override
