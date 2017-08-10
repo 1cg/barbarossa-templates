@@ -11,9 +11,7 @@ enum Property {
     @NotNull
     @Override
     public String getStringName() {
-      // please excuse the "disabled" in this name.  This is an artifact from an earlier approach
-      //      to properties, which we keep for backwards compatibility
-      return "HbDisableAutoGenerateCloseTag";
+      return "BbAutoGenerateCloseTag";
     }
 
     @NotNull
@@ -27,7 +25,7 @@ enum Property {
     @NotNull
     @Override
     public String getStringName() {
-      return "HbAutocompleteMustaches";
+      return "BbAutocompleteMustaches";
     }
 
     @NotNull
@@ -41,7 +39,7 @@ enum Property {
     @NotNull
     @Override
     public String getStringName() {
-      return "HbFormatter";
+      return "BbFormatter";
     }
 
     @NotNull
@@ -55,7 +53,7 @@ enum Property {
     @NotNull
     @Override
     public String getStringName() {
-      return "HbAutoCollapseBlocks";
+      return "BbAutoCollapseBlocks";
     }
 
     @NotNull
@@ -69,7 +67,7 @@ enum Property {
     @NotNull
     @Override
     public String getStringName() {
-      return "HbCommenterLanguageId";
+      return "BbCommenterLanguageId";
     }
 
     @NotNull
@@ -84,7 +82,7 @@ enum Property {
     @NotNull
     @Override
     public String getStringName() {
-      return "HbShouldOpenHtmlAsHb";
+      return "BbShouldOpenHtmlAsHb";
     }
 
     @NotNull
