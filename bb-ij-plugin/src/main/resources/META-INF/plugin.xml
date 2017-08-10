@@ -1,0 +1,40 @@
+<idea-plugin version="2">
+    <id>manifold.ij</id>
+    <name>BareBones Template Plugin for IntelliJ</name>
+    <description>This value is patched by the build script</description>
+    <category>HTML/JavaScript Development</category>
+    <version>This value is patched by the build script</version>
+    <vendor email="manifold-systems@googlegroups.com" url="http://manifold.systems">manifold.systems</vendor>
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="This value is patched by the build script"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileTypeFactory implementation="com.dmarcotte.handlebars.file.HbFileTypeFactory"/>
+        <!--<html.scriptContentProvider language="Handlebars" implementationClass="com.dmarcotte.handlebars.HbScriptContentProvider"/>-->
+        <!--<lang.parserDefinition language="Handlebars" implementationClass="com.dmarcotte.handlebars.parsing.HbParseDefinition"/>-->
+        <!--<lang.formatter language="Handlebars" implementationClass="com.dmarcotte.handlebars.format.HbFormattingModelBuilder"/>-->
+        <!--<colorSettingsPage implementation="com.dmarcotte.handlebars.pages.HbColorsPage"/>-->
+        <lang.fileViewProviderFactory language="BareBones" implementationClass="com.dmarcotte.handlebars.file.HbFileViewProviderFactory"/>
+        <!--<lang.commenter language="Handlebars" implementationClass="com.dmarcotte.handlebars.editor.comments.HbCommenter"/>-->
+        <!--<braceMatcher filetype="Handlebars/Mustache" implementationClass="com.dmarcotte.handlebars.editor.braces.HbBraceMatcher"/>-->
+        <!--<completion.contributor language="Handlebars" implementationClass="com.dmarcotte.handlebars.completion.HbKeywordCompletionContributor"/>-->
+        <!--<lang.foldingBuilder language="Handlebars" implementationClass="com.dmarcotte.handlebars.editor.folding.HbFoldingBuilder"/>-->
+        <!--<typedHandler implementation="com.dmarcotte.handlebars.editor.actions.HbTypedHandler" order="before xmlSlash"/>-->
+        <!--<enterHandlerDelegate implementation="com.dmarcotte.handlebars.editor.actions.HbEnterHandler"/>-->
+        <!--<projectConfigurable provider="com.dmarcotte.handlebars.pages.HbConfigurationProvider"/>-->
+        <!--<codeFoldingOptionsProvider instance="com.dmarcotte.handlebars.config.HbFoldingOptionsProvider"/>-->
+        <!--<lang.psiStructureViewFactory language="Handlebars" implementationClass="com.dmarcotte.handlebars.structure.HbStructureViewFactory"/>-->
+        <!--<annotator language="Handlebars" implementationClass="com.dmarcotte.handlebars.inspections.HbBlockMismatchAnnotator"/>-->
+        <!--<xml.zenCodingGenerator implementation="com.dmarcotte.handlebars.editor.templates.HbEmmetGenerator"/>-->
+        <!--<iconProvider implementation="com.dmarcotte.handlebars.file.HbIconProvider"/>-->
+        <!--<lang.substitutor language="HTML" implementationClass="com.dmarcotte.handlebars.file.BbLanguageSubstitutor"/>-->
+        <!--<liveTemplateContext implementation="com.dmarcotte.handlebars.editor.templates.HbTemplateContextType"/>-->
+        <!--<defaultLiveTemplatesProvider implementation="com.dmarcotte.handlebars.editor.templates.HbsLiveTemplatesProvider"/>-->
+        <!--<lang.syntaxHighlighterFactory language="Handlebars" implementationClass="com.dmarcotte.handlebars.HbHighlighterFactory"/>-->
+        <!--<localInspection bundle="messages.HbBundle" key="handlebars.inspections.helpers.empty" groupBundle="messages.HbBundle" groupKey="inspections.group.name" language="Handlebars" enabledByDefault="true" level="WARNING" implementationClass="com.dmarcotte.handlebars.inspections.HbEmptyBlockInspection"/>-->
+        <!--<highlightErrorFilter implementation="com.dmarcotte.handlebars.inspections.HbErrorFilter"/>-->
+        <!--<fileIndentOptionsProvider implementation="com.dmarcotte.handlebars.format.HbFileIndentOptionsProvider"/>-->
+    </extensions>
+
+</idea-plugin>
+
