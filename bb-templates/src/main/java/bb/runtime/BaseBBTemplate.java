@@ -6,7 +6,7 @@ import sun.misc.Unsafe;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.*;
 
 public class BaseBBTemplate {
 
@@ -54,24 +54,60 @@ public class BaseBBTemplate {
                 theUnsafe.setAccessible(true);
                 Unsafe unsafe = (Unsafe) theUnsafe.get(null);
                 unsafe.throwException(e);
-            } catch (NoSuchFieldException|IllegalAccessException ex) {
+            } catch (NoSuchFieldException | IllegalAccessException ex) {
                 throw new RuntimeException(ex);
             }
         }
-
         StackTraceElement[] currentStack = e.getStackTrace();
+        String templateClassName = getClass().getName();
 
-        int lineNumber = currentStack[0].getLineNumber();
+        int elementToRemove = 0;
+        while (elementToRemove < currentStack.length) {
+            StackTraceElement curr = currentStack[elementToRemove];
+            if (curr.getClassName().equals(templateClassName)) {
+                if (curr.getMethodName().equals("renderImpl")) {
+                    handleTemplateException(e, fileName, lineStart, bbLineNumbers, elementToRemove);
+                } else if (curr.getMethodName().equals("footer") || curr.getMethodName().equals("header")) {
+                    handleLayoutException(e, fileName, lineStart, bbLineNumbers, elementToRemove);
+                }
+            }
+            elementToRemove++;
+        }
+    }
+
+    protected void handleTemplateException(Exception e, String fileName, int lineStart, int[] bbLineNumbers, int elementToRemove) {
+        StackTraceElement[] currentStack = e.getStackTrace();
+        int lineNumber = currentStack[elementToRemove].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
-        String declaringClass = currentStack[1].getClassName();
-        String methodName = currentStack[1].getMethodName();
+
+        String declaringClass = currentStack[elementToRemove + 1].getClassName();
+        String methodName = currentStack[elementToRemove + 1].getMethodName();
 
         StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName, bbLineNumbers[javaLineNum]);
-        currentStack[1] = b;
+        currentStack[elementToRemove + 1] = b;
 
-        e.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
+        System.arraycopy(currentStack, elementToRemove + 1, currentStack, elementToRemove, currentStack.length-1-elementToRemove);
+        throwBBException(e, currentStack);
+    }
+
+    protected void handleLayoutException(Exception e, String fileName, int lineStart, int[] bbLineNumbers, int elementToReplace) {
+        StackTraceElement[] currentStack = e.getStackTrace();
+        int lineNumber = currentStack[elementToReplace].getLineNumber();
+        int javaLineNum = lineNumber - lineStart;
+
+        String declaringClass = currentStack[elementToReplace].getClassName();
+        String methodName = currentStack[elementToReplace].getMethodName();
+
+        StackTraceElement b = new StackTraceElement(declaringClass, methodName, fileName, bbLineNumbers[javaLineNum]);
+        currentStack[elementToReplace] = b;
+
+        throwBBException(e, currentStack);
+    }
+
+    protected void throwBBException(Exception e, StackTraceElement[] currentStack) {
+        e.setStackTrace(currentStack);
         BBRuntimeException exceptionToThrow = new BBRuntimeException(e);
-        exceptionToThrow.setStackTrace(Arrays.copyOfRange(currentStack, 1, currentStack.length));
+        exceptionToThrow.setStackTrace(currentStack);
 
         try {
             Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
@@ -81,6 +117,8 @@ public class BaseBBTemplate {
         } catch (NoSuchFieldException|IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
+
     }
+
 
 }
