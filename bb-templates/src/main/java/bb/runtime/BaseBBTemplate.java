@@ -9,7 +9,16 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class BaseBBTemplate {
-
+    private static Unsafe unsafe;
+    static {
+        try {
+            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            unsafe = (Unsafe) theUnsafe.get(null);
+        } catch (NoSuchFieldException|IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
     private ILayout _explicitLayout = null;
 
     public String toS(Object o) {
@@ -49,14 +58,7 @@ public class BaseBBTemplate {
 
     protected void handleException(Exception e, String fileName, int lineStart, int[] bbLineNumbers) {
         if (e.getClass().equals(BBRuntimeException.class)) {
-            try {
-                Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-                theUnsafe.setAccessible(true);
-                Unsafe unsafe = (Unsafe) theUnsafe.get(null);
-                unsafe.throwException(e);
-            } catch (NoSuchFieldException | IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            unsafe.throwException(e);
         }
         StackTraceElement[] currentStack = e.getStackTrace();
         String templateClassName = getClass().getName();
@@ -75,7 +77,7 @@ public class BaseBBTemplate {
         }
     }
 
-    protected void handleTemplateException(Exception e, String fileName, int lineStart, int[] bbLineNumbers, int elementToRemove) {
+    private void handleTemplateException(Exception e, String fileName, int lineStart, int[] bbLineNumbers, int elementToRemove) {
         StackTraceElement[] currentStack = e.getStackTrace();
         int lineNumber = currentStack[elementToRemove].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
@@ -90,7 +92,7 @@ public class BaseBBTemplate {
         throwBBException(e, currentStack);
     }
 
-    protected void handleLayoutException(Exception e, String fileName, int lineStart, int[] bbLineNumbers, int elementToReplace) {
+    private void handleLayoutException(Exception e, String fileName, int lineStart, int[] bbLineNumbers, int elementToReplace) {
         StackTraceElement[] currentStack = e.getStackTrace();
         int lineNumber = currentStack[elementToReplace].getLineNumber();
         int javaLineNum = lineNumber - lineStart;
@@ -104,20 +106,11 @@ public class BaseBBTemplate {
         throwBBException(e, currentStack);
     }
 
-    protected void throwBBException(Exception e, StackTraceElement[] currentStack) {
+    private void throwBBException(Exception e, StackTraceElement[] currentStack) {
         e.setStackTrace(currentStack);
         BBRuntimeException exceptionToThrow = new BBRuntimeException(e);
         exceptionToThrow.setStackTrace(currentStack);
-
-        try {
-            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            Unsafe unsafe = (Unsafe) theUnsafe.get(null);
-            unsafe.throwException(exceptionToThrow);
-        } catch (NoSuchFieldException|IllegalAccessException ex) {
-            throw new RuntimeException(ex);
-        }
-
+        unsafe.throwException(exceptionToThrow);
     }
 
 
