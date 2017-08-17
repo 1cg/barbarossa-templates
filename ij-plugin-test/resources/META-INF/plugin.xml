@@ -1,0 +1,26 @@
+<idea-plugin version="2">
+  <name>Nette Latte</name>
+  <description>Latte templating language, used in Nette Framework</description>
+  <version>0.1</version>
+  <vendor>juzna.cz</vendor>
+  <idea-version since-build="111.0" />
+  <depends>com.intellij.modules.lang</depends>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+
+  <extensions defaultExtensionNs="com.intellij">
+      <fileTypeFactory implementation="cz.juzna.latte.file.LatteFileTypeFactory" />
+      <lang.parserDefinition language="Latte" implementationClass="cz.juzna.latte.parser.LatteParserDefinition" />
+      <completion.contributor language="Latte" implementationClass="cz.juzna.latte.completion.LatteCompletionContributor" />
+      <completion.contributor language="HTML" implementationClass="cz.juzna.latte.completion.LatteCompletionContributor" />
+      <lang.fileViewProviderFactory language="Latte" implementationClass="cz.juzna.latte.file.LatteFileViewProviderFactory" />
+      <colorSettingsPage implementation="cz.juzna.latte.editor.LatteColorsPage" />
+  </extensions>
+</idea-plugin>
