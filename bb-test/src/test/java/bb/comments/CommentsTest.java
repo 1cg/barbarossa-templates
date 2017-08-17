@@ -1,5 +1,6 @@
 package bb.comments;
 
+import bb.BBTemplates;
 import org.junit.Test;
 import comments.*;
 
@@ -9,6 +10,7 @@ public class CommentsTest {
 
     @Test
     public void basicCommentsWork() {
+        BBTemplates.trace();
         assertEquals("", SimpleComment.render());
     }
 

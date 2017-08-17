@@ -112,6 +112,4 @@ public class BaseBBTemplate {
         exceptionToThrow.setStackTrace(currentStack);
         unsafe.throwException(exceptionToThrow);
     }
-
-
 }
