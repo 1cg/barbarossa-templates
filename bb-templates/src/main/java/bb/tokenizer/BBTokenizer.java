@@ -19,6 +19,7 @@ public class BBTokenizer   {
         String tokenString;
         int line, col;
         int index;
+        int toJump = 0;
 
         TokenBuilder(String str) {
             this.tokenString = str;
@@ -67,28 +68,34 @@ public class BBTokenizer   {
             Token toReturn;
             if (nextType == STATEMENT) {
                 advancePosition(2);
+                toJump = 2;
                 toReturn = next(nextType, true, line, col, pos,"%>");
                 advancePosition(2);
             } else if (nextType == EXPRESSION) {
                 if (isModernExpressionSyntax()) {
                     advancePosition(2);
+                    toJump = 1;
                     toReturn = next(nextType, true, line, col, pos, "}");
                     advancePosition();
                 } else {
                     advancePosition(3);
+                    toJump = 2;
                     toReturn = next(nextType, true, line, col, pos, "%>");
                     advancePosition(2);
                 }
 
             } else if (nextType == DIRECTIVE) {
                 advancePosition(3);
+                toJump = 2;
                 toReturn = next(nextType, true, line, col, pos,"%>");
                 advancePosition(2);
             } else if (nextType == COMMENT) {
                 advancePosition(4);
+                toJump = 4;
                 toReturn = next(nextType, false, line, col, pos,"--%>");
                 advancePosition(4);
             } else { //String Content
+                toJump = 0;
                 toReturn = next(nextType, false, line, col, pos,"<%", "${");
             }
             return toReturn;
@@ -128,7 +135,7 @@ public class BBTokenizer   {
                             if (type != STRING_CONTENT) {
                                 currentTokenString = currentTokenString.trim();
                             }
-                            return new Token(type, currentTokenString, line, col, pos);
+                            return new Token(type, currentTokenString, line, col, pos, index + toJump);
                         }
                     }
                     if (type != COMMENT) {
@@ -138,10 +145,10 @@ public class BBTokenizer   {
                 advancePosition();
             }
             if (type == STRING_CONTENT) {
-                return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
+                return new Token(type, tokenString.substring(contentStartPos), line, col, pos, index);
             }
             addError("Tokenization Error: " + type + " is not closed", line);
-            return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
+            return new Token(type, tokenString.substring(contentStartPos), line, col, pos, index);
         }
 
         private boolean isModernExpressionSyntax() {

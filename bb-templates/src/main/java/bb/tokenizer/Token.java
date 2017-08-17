@@ -16,8 +16,9 @@ public class Token {
     private int _offset;
     private int _line;
     private int _position;
+    private int _endPos;
 
-    public Token(TokenType type, String content, int line, int column, int position) {
+    public Token(TokenType type, String content, int line, int column, int position, int endPos) {
         _type = type;
         _content = content;
         _offset = column;
@@ -43,5 +44,9 @@ public class Token {
 
     public int getPosition() {
         return _position;
+    }
+
+    public int getEndPosition() {
+        return _endPos;
     }
 }
